@@ -2,6 +2,7 @@
 import { User, Mail, Lock, Upload, AlertCircle, ArrowRight, Check, X } from "lucide-react";
 import { register } from "../services/auth.service";
 import { LoadingBanner } from "../components/loading";
+import { useNavigate } from "react-router-dom";
 
 const PALETTE = {
     page: "#0F0F0F",
@@ -51,6 +52,7 @@ const TYPOGRAPHY = {
 
 export const Register = () => {
     const [username, setUsername] = useState("");
+    const [fullName, setFullName] = useState("")
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [avatar, setAvatar] = useState(null);
@@ -59,24 +61,27 @@ export const Register = () => {
     const [loading, setLoading] = useState(false);
     const [preview, setPreview] = useState("");
     const fileInputRef = useRef(null);
+    const navigate = useNavigate()
 
     const submit = async (e) => {
         e.preventDefault();
         setError("");
 
-        if (!username || !email || !password) {
+        if (!username || !email || !password || !fullName) {
             setError("All fields are required to register.");
             return;
         }
 
         setLoading(true);
+        console.log("before request")
 
         try {
-            const res = await register({ username, email, password, avatar });
+            const res = await register({ username, email, password, avatar, fullName });
             console.log(res);
             setSubmitted(true);
+            setTimeout(() => { navigate("/login") }, 2000)
         } catch (err) {
-            setError(err?.message || "Unable to create your account right now.");
+            setError(err?.response?.data?.message || "Unable to create your account right now.");
         } finally {
             setLoading(false);
         }
@@ -223,6 +228,23 @@ export const Register = () => {
 
                         <label className="mb-3 block">
                             <span className="mb-2 block text-[0.7rem] uppercase tracking-[0.3em]" style={{ color: PALETTE.muted, fontWeight: TYPOGRAPHY.medium }}>
+                                fullname
+                            </span>
+                            <div className="flex items-center gap-2 rounded-2xl border border-transparent px-3 py-3 transition-all" style={{ backgroundColor: PALETTE.surface, borderColor: PALETTE.line }}>
+                                <User size={16} color={PALETTE.muted} />
+                                <input
+                                    className="flex-1 bg-transparent outline-none"
+                                    style={{ color: PALETTE.ink, fontSize: TYPOGRAPHY.input, fontWeight: TYPOGRAPHY.regular }}
+                                    value={fullName}
+                                    onChange={(e) => setFullName(e.target.value)}
+                                    placeholder="Choose a fullname"
+                                    required
+                                />
+                            </div>
+                        </label>
+
+                        <label className="mb-3 block">
+                            <span className="mb-2 block text-[0.7rem] uppercase tracking-[0.3em]" style={{ color: PALETTE.muted, fontWeight: TYPOGRAPHY.medium }}>
                                 Email
                             </span>
                             <div className="flex items-center gap-2 rounded-2xl border border-transparent px-3 py-3 transition-all" style={{ backgroundColor: PALETTE.surface, borderColor: PALETTE.line }}>
@@ -253,6 +275,7 @@ export const Register = () => {
                                     onChange={(e) => setPassword(e.target.value)}
                                     placeholder="Create a strong password"
                                     required
+                                    autocomplete="new-password"
                                 />
                             </div>
                         </label>
@@ -306,7 +329,9 @@ export const Register = () => {
                             </p>
                             <p
                                 className='cursor-pointer'
-                                style={{ color: PALETTE.blue }}>Back to Login</p>
+                                style={{ color: PALETTE.blue }}
+                                 onClick={ () => { navigate("/login")} }
+                                >Back to Login</p>
                         </div>
                     </div>
                 </form>

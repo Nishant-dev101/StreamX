@@ -1,6 +1,5 @@
 import mongoose, { Mongoose } from "mongoose";
-import jwt from "jsonwebtoken";
-import bcrypt from "bcrypt";
+
 
 const userSchema = mongoose.Schema(
   {
@@ -27,11 +26,10 @@ const userSchema = mongoose.Schema(
     },
     password: {
       type: String,
-      required: [true], // custom error are available
+      required: [true, "Password is required"],
     },
     avatar: {
       type: String,
-      required: [true, " Password is required"],
     },
     watchHistory: [
       {

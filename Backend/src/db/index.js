@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import DB_NAME from "../constants.js";
+import bycrypt from "bcrypt";
 
 export const connectDB = async () => {
  
@@ -16,6 +17,6 @@ export const connectDB = async () => {
     
   } catch (error) {
     console.error("err", error);
-    process.exit(1);
+    process.exit(1)
   }
-} ;
+} 

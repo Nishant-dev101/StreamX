@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { Mail, Lock, ArrowRight, AlertCircle } from 'lucide-react'
+import { login } from '../services/auth.service'
 
 const PALETTE = {
     page: "#0F0F0F",
@@ -53,16 +54,21 @@ export const Login = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState(null)
-  const { login } = useAuth()
+  
   const navigate = useNavigate()
 
   const submit = async (e) => {
     e.preventDefault()
     setError(null)
+    console.log(email,password)
+
     try {
-      await login({ email, password })
+      const res = await login({ email, password })
+      console.log(res);
+      
       navigate('/')
     } catch (err) {
+      console.log(err)
       setError(err?.response?.data?.message || 'Login failed')
     }
   }
@@ -172,7 +178,9 @@ export const Login = () => {
             </p>
           <p  
           className='cursor-pointer'
-          style={{color: PALETTE.blue}}>Create an account</p>
+          style={{color: PALETTE.blue}}
+          onClick={ () => { navigate("/register")} }
+          >Create an account</p>
         </div>
         </div>
        

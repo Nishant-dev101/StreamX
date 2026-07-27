@@ -15,7 +15,7 @@ export const AuthProvider = ({ children }) => {
         const res = await getCurrentUser()
         console.log(res);
         
-        setUser(res.data)
+        setUser(res?.data?.data)
       } catch (err) {
         console.log(err);
         

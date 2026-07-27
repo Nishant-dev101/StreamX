@@ -4,26 +4,15 @@ import uploadOnCloudinary from "../utils/clodinary.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 import jwt from "jsonwebtoken"
 import mongoose from "mongoose";
+import { generateAccessToken, generateRefreshToken } from "../utils/generateTokens.js";
+import bcrypt from "bcrypt"; 
 
 
-const generateAccessAndRefreshToken =  async (userid) => {
-        try {
-          const user = await User.findOne(userid)
-          const accessToken = await user.generateAccessToken()
-          const refreshToken = await user.generateRefreshToken()
 
-          user.refreshToken = refreshToken
-           await user.save({validateBeforeSave: false}) // does need all required values lke password
-           
-           return { accessToken , refreshToken}
-        } catch (error) {
-           throw new ApiError(500, "Something went wrong while defining tokens")
-        }
-}
 
 const registerUser = async (req, res, next) => {
        
-  const { fullName, userName, email, password } = req.body;
+  const { fullName, username, email, password } = req.body;
 
   console.log(req.body);
   
@@ -31,60 +20,93 @@ const registerUser = async (req, res, next) => {
   
 
   if (
-    [fullName, userName, email, password].some((field) => field?.trim() === "")
+    [fullName, username, email, password].some((field) => field?.trim() === "")
   ) {
     return res.status(400).json(new ApiError(400, "All fields are Required"));
   }
 
+     console.log("before creating user");
+     console.log(User.collection.name);
+     console.log(User.db.name);
+
+
   const existedUser = await User.findOne({
-    $or: [{ email }, { userName }],
+    $or: [{ email }, { username }],
   });
+
+   console.log("after creating user");
 
   if (existedUser) {
     //  res.send(new ApiResponse(500,[],"user already exists"))
     return res.status(409).json(new ApiError(409, "User with email or userName already exists"))
   }  
-  console.log(req.files);
+  console.log(req.file);
   
+   let avatar;
 
-  const avatarLocalPath = req.file?.path
+   if (req?.file) {
+    
+    const avatarLocalPath = req.file?.path;
 
-  if (!avatarLocalPath) {
-      return res.status(400).json(new ApiError(400, "Avatar file Required"))
+    if (!avatarLocalPath) {
+      return res.status(400).json(new ApiError(400, "Avatar file Required"));
+    }
+
+    avatar = await uploadOnCloudinary(avatarLocalPath);
+
+    if (!avatar)
+      return res
+        .status(400)
+        .json(
+          new ApiError(400, "Something went wrong while uploading avatar file"),
+        );
   }
-
-   const avatar = await uploadOnCloudinary(avatarLocalPath)
-  
-   if(!avatar) return res.status(400).json(new ApiError(400, "Something went wrong while uploading avatar file"))  
      
     const hashedPassword = await bcrypt.hash(password, 10)
 
+ 
      
    let user
    try{   
       user = await User.create({
       fullName,
-      avatar: avatar?.url,
+      avatar: avatar?.url ||  "",
       email,
       password: hashedPassword,
-      userName: userName.toLowerCase()
+      userName: username.toLowerCase()
     })
  
    } catch (error) {
-      return res.status(500).json(new ApiError(500, error.message))
+      console.log(error)
+      return res.status(500).json(new ApiError(500, "Something went wrong while registering the user"))
    }
+     const accessToken = generateAccessToken(user._id);
+     const refreshToken = generateRefreshToken(user._id);
+
+     user.refreshToken = refreshToken;
+     await user.save({ validateBeforeSave: false });
 
     const createdUser = await User.findById(user._id).select(
       '-password -refreshToken'
    )
 
+   const options = {
+     httpOnly: true,
+     secure: true,
+     sameSite: "None",
+   }
+
    if(!createdUser){
       return res.status(500).json(new ApiError(500, "Something went wrong while registering the user"))
    }
 
-  return res.status(201).json(
+  return res
+     .status(200)
+     .cookie("accessToken", accessToken,options)
+     .cookie("refreshToken", refreshToken, options)
+     .json(
       new ApiResponse(200, createdUser, "User registered succesfully")
-   )
+      )
 
 
 
@@ -95,36 +117,42 @@ const registerUser = async (req, res, next) => {
 
 };
 
+
 const loginUser =  async (req, res, next) => {
     
-  const { userName, email, password } = req.body;
+  const { email, password } = req.body;
   console.log(req.body);
+ 
   console.log("hi there");
   
   
    
- if(!(userName || email)) {
-    throw new ApiError(400, "Username or Email is required")
+ if(!email) {
+   return res.status(400).json(new ApiError(400, "Email is required"))
  }
 
    const validUser = await User.findOne({
-    $or: [{userName}, {email}]
+     email
    })
+
    console.log("valid user");
    
     
    if (!validUser) {
-      throw new ApiError(404, "User with this userName and email does not exists")
+      return res.status(404).json(new ApiError(404, "User does not exists"))
    }
 
-  const ispasswordvalid = await validUser.isPasswordCorrect(password)
-  console.log(ispasswordvalid);
+    const isPasswordvalid = await bcrypt.compare(password, validUser.password)
+    
+    console.log(isPasswordvalid);
   
-  if(!ispasswordvalid){
-    throw new ApiError(401, "Password Does not match")
+  if(!isPasswordvalid){
+    return res.status(401).json(new ApiError(401, "Incorrect Password"))
   }
- 
-    const { accessToken , refreshToken } = await generateAccessAndRefreshToken(validUser._id)
+    
+   const accessToken = generateAccessToken(validUser._id)
+   const refreshToken = generateRefreshToken(validUser._id)
+    
     console.log("after token");
     console.log(accessToken);
     
@@ -135,7 +163,8 @@ const loginUser =  async (req, res, next) => {
 
   const options = {
     httpOnly : true,
-    secure: true
+    secure: true,
+    samesite: "None"
   }
 
 
@@ -145,9 +174,7 @@ const loginUser =  async (req, res, next) => {
   .json(
     new ApiResponse(
        200,
-      {
-       user: loggedInUser, refreshToken,accessToken
-      },
+       loggedInUser,
       "User logged In Succesfully"
     )
   )
