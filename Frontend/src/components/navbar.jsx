@@ -1,18 +1,20 @@
 import React, { useState } from 'react'
 import { Home, LayoutList, Heart, ListVideo, User, ChevronRight, ChevronLeft } from 'lucide-react'
 import { PALETTE } from '../utils/styles'
+import { useNavigate } from "react-router-dom"
 
 const navItems = [
-  { label: 'Home', icon: Home },
-  { label: 'Subscriptions', icon: LayoutList },
-  { label: 'Liked videos', icon: Heart },
-  { label: 'Playlist', icon: ListVideo },
-  { label: 'You', icon: User },
-]
+  { label: "Home", path: "/", icon: Home },
+  { label: "Subscriptions", path: "/subscriptions", icon: LayoutList },
+  { label: "Liked Videos", path: "/liked-videos", icon: Heart },
+  { label: "Playlists", path: "/playlist", icon: ListVideo },
+  { label: "You", path: "/user", icon: User },
+];
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false)
   const { navbar, railText, active, accent, line, muted } = PALETTE
+  const navigate = useNavigate()
 
   return (
     <aside
@@ -55,6 +57,7 @@ const Navbar = () => {
                 type="button"
                 className={`flex items-center rounded-2xl p-3 transition-all duration-300 hover:bg-white/10 ${isOpen ? 'justify-start gap-3 sm:px-4 sm:py-3' : 'justify-center w-full'}`}
                 style={{ color: railText }}
+                onClick={ () => {navigate(item.path)}}
               >
                 <span className="flex h-10 w-10 min-w-[40px] items-center justify-center rounded-2xl" style={{ backgroundColor: active }}>
                   <Icon size={18} color={accent} />

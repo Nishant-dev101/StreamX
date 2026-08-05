@@ -7,6 +7,9 @@ import LikedVideosPage from "../pages/LikedVideosPage";
 import VideoTray from "../components/videoTray";
 import Home from "../pages/Home";
 import { ProtectedRoute } from "../components/ProtectedRoute";
+import Subscriptions from "../pages/subscriptions";
+import UserProfile from "../pages/UserPofile";
+import Playlist from "../pages/Playlist";
 
 export const router = createBrowserRouter([
   {
@@ -18,9 +21,21 @@ export const router = createBrowserRouter([
         element: <Home/>,
       },
       {
-        path: "likedVideos",
+        path: "liked-videos",
         element: <ProtectedRoute><LikedVideosPage /></ProtectedRoute>,
       },
+       {
+        path: "subscriptions",
+        element: <ProtectedRoute><Subscriptions/></ProtectedRoute>
+       },
+       {
+        path: "user",
+        element: <ProtectedRoute><UserProfile/></ProtectedRoute>
+       },
+       {
+        path: "playlist",
+        element: <ProtectedRoute><Playlist/></ProtectedRoute>
+       }
     ],
   },
   {

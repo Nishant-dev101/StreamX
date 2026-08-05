@@ -79,7 +79,7 @@ const LikedVideosPage = () => {
       </div>
 
       {videos.length > 0 ? (
-        <VideoTray videos={videos} />
+        <VideoTray key= {videos._id} videos={videos} />
       ) : (
         <div
           className="flex min-h-[220px] flex-col items-center justify-center rounded-2xl border px-6 py-10 text-center"
