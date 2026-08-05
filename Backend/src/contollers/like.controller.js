@@ -160,17 +160,8 @@ const getLikedVideos = async (req, res) => {
       $unwind: "$videoDetails",
     },
     {
-      $group: {
-        _id: "$likedBy",
-        videos: { $push: "$videoDetails" },
-        // likedVideosCount: { $sum: 1}
-      },
-    }, // both valid wayyss to do countLikedVideos
-    {
-      $addFields: {
-        likedVideosCount: {
-          $size: "$videos",
-        }
+      $replaceRoot: {
+        newRoot: "$videoDetails",
       },
     },
   ]);
@@ -180,7 +171,7 @@ const getLikedVideos = async (req, res) => {
   return res
   .status(200)
   .json( 
-    new ApiResponse(201, videos, "succesfully fetched liked videos")
+    new ApiResponse(200, videos, "succesfully fetched liked videos")
   )
 }
 

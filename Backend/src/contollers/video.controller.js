@@ -6,18 +6,20 @@ import uploadOnCloudinary from "../utils/clodinary.js"
 
 const getAllVideos = async (req, res, next) => {
    
-    const { page = 1, limit = 10, sortBy = "createdAt", order = 1} = req.query
+    const { page = 1, limit = 10, sortBy = "views", order = 1} = req.query
 
     const pageInt = parseInt(page)
     const limitInt = parseInt(limit)
     const skip = (pageInt - 1) * limitInt
 
     const validSortFields = [ "createdAt", "views", "title" ]
-    const validsortBY = validSortFields.includes(sortBy)? sortBy : "createdAt";
+    const validsortBY = validSortFields.includes(sortBy)? sortBy : "views";
     const validOrder = order == -1 ? -1 : 1;
 
     const videos = await Video
-    .find()
+    .find({
+        ispublised: true
+    })
     .sort({ [validsortBY]: validOrder})
     .skip(skip)
     .limit(limitInt)

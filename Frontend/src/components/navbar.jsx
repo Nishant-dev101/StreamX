@@ -16,18 +16,18 @@ const Navbar = () => {
 
   return (
     <aside
-      className={`h-screen border-r transition-all duration-300 w-16 ${isOpen ? 'w-56 sm:w-64' : 'w-16'}`}
+      className={`h-screen border-r transition-all w-20 ${isOpen ? 'sm:w-64' : 'sm:w-20'}`}
       style={{ backgroundColor: navbar, color: railText, borderColor: line }}
     >
       <nav className="flex h-full flex-col px-2 py-4 sm:px-3">
         <div className="mb-6 flex items-center justify-between">
-          <div className={`items-center gap-3 ${isOpen ? 'hidden sm:flex' : 'hidden'}`}>
+          <div className={`items-center gap-4 ${isOpen ? 'hidden sm:flex' : 'hidden'}`}>
             <div className="flex h-10 w-10 items-center justify-center rounded-2xl" style={{ backgroundColor: active }}>
               <Home size={18} color={accent} />
             </div>
             <div className="flex flex-col">
-              <p className="text-sm font-semibold" style={{ color: railText }}>
-                Video Tube
+              <p className="text-sm font-semibold" style={{ color: accent }}>
+                StreamX
               </p>
               <p className="text-xs" style={{ color: muted }}>
                 Your feed
@@ -38,7 +38,7 @@ const Navbar = () => {
           <button
             type="button"
             onClick={() => setIsOpen((prev) => !prev)}
-            className="ml-auto flex h-10 w-10 items-center justify-center rounded-2xl transition hover:bg-white/10"
+            className="ml-auto hidden h-10 w-10 items-center justify-center rounded-2xl transition-all duration-300 hover:bg-white/10 sm:flex"
             style={{ color: railText }}
             aria-label="Toggle navbar"
           >
@@ -53,13 +53,13 @@ const Navbar = () => {
               <button
                 key={item.label}
                 type="button"
-                className={`flex items-center rounded-2xl p-2 transition hover:bg-white/10 ${isOpen ? 'justify-start gap-3 px-3 py-3' : 'justify-center'} sm:justify-start sm:gap-3 sm:px-3 sm:py-3`}
+                className={`flex items-center rounded-2xl p-3 transition-all duration-300 hover:bg-white/10 ${isOpen ? 'justify-start gap-3 sm:px-4 sm:py-3' : 'justify-center w-full'}`}
                 style={{ color: railText }}
               >
-                <span className="flex h-10 w-10 items-center justify-center rounded-2xl" style={{ backgroundColor: active }}>
+                <span className="flex h-10 w-10 min-w-[40px] items-center justify-center rounded-2xl" style={{ backgroundColor: active }}>
                   <Icon size={18} color={accent} />
                 </span>
-                <span className={`text-sm font-medium ${isOpen ? 'hidden sm:block' : 'hidden'}`} style={{ color: railText }}>
+                <span className={`${isOpen ? 'hidden sm:block' : 'hidden'} text-sm font-medium`} style={{ color: railText }}>
                   {item.label}
                 </span>
               </button>

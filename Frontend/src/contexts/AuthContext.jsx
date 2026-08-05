@@ -9,7 +9,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-      setLoading(true)
+   
     const fetchUser = async () => {
       try {
         const res = await getCurrentUser()
@@ -18,7 +18,6 @@ export const AuthProvider = ({ children }) => {
         setUser(res?.data?.data)
       } catch (err) {
         console.log(err);
-        
         setUser(null)
       } finally {
        setLoading(false)
@@ -31,7 +30,7 @@ export const AuthProvider = ({ children }) => {
   
     
    return (
-    <AuthContext.Provider value={{ user, setUser }}>
+    <AuthContext.Provider value={{ user, setUser , loading , setLoading}}>
       {children}
     </AuthContext.Provider>
   )

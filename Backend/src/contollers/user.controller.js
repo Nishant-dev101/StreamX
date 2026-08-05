@@ -157,14 +157,18 @@ const loginUser =  async (req, res, next) => {
     console.log(accessToken);
     
     
-  const loggedInUser = await User.findOne(validUser._id).select(
-    " -password -refreshToken"
+  const loggedInUser = await User.findById(validUser._id).select(
+    "-password -refreshToken"
   )
+
+  if (!loggedInUser) {
+    return res.status(500).json(new ApiError(500, "Something went wrong while logging in the user"))
+  }
 
   const options = {
     httpOnly : true,
     secure: true,
-    samesite: "None"
+    sameSite: "None"
   }
 
 

@@ -5,12 +5,16 @@ import { Mail, Lock, ArrowRight, AlertCircle } from 'lucide-react'
 import { login } from '../services/auth.service'
 import { PALETTE, TYPOGRAPHY } from "../utils/styles.js"
 
+
+
 export const Login = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState(null)
-  
+  const [loading, setLoading] = useState(false)
+  const { setUser } = useAuth()
   const navigate = useNavigate()
+  
 
   const submit = async (e) => {
     e.preventDefault()
@@ -18,13 +22,19 @@ export const Login = () => {
     console.log(email,password)
 
     try {
+      setLoading(true)
       const res = await login({ email, password })
-      console.log(res);
+      console.log(res)
+      const user = res?.data?.data ?? null
+      console.log('logged in user payload', user)
+      setUser(user)
       
       navigate('/')
     } catch (err) {
       console.log(err)
       setError(err?.response?.data?.message || 'Login failed')
+    }finally {
+      setLoading(false)
     }
   }
 
