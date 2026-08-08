@@ -14,3 +14,10 @@ export const getLikedVideos = async () => {
     const res = await api.get('/Like/getLikedVideos')
     return res
 }
+
+
+export const getVideoById = async (id) => {
+     
+   const res = await api.get(`/video/getVideoById/${id}`)
+   return res
+}

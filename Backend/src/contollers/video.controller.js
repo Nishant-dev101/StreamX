@@ -220,11 +220,31 @@ const togglePublisedStatus = async (req, res, next) => {
     
 }
 
+
+const getVideoById = async (req, res, next) => {
+    const { id } = req.params;
+     
+    if(!mongoose.Types.ObjectId.isValid(id)){
+        return res.status(400).json(new ApiResponse(400, null, "Invalid video ID"));
+    }
+
+     const video = await Video.findById(id);
+
+     if(!video){
+        return res.status(404).json(new ApiResponse(404, null, "Video not found"));
+     }
+
+     return res.status(200).
+     json(new ApiResponse(200, video, "Video fetched successfully"));
+    }
+     
+
 export { 
     getAllVideos, 
     getSearchedVideos,
     uploadAVideo,
     updateVideo,
     deleteVideo,
-    togglePublisedStatus 
+    togglePublisedStatus,
+    getVideoById
 }
