@@ -46,7 +46,7 @@ export const router = createBrowserRouter([
     path: "/register",
     element: <Register />,
   },{
-    path: "/video/videoPlayer/:id",
+    path: "/video/videoPlayerPage/:id",
     element: <VideoPlayPage />
   }
 ]);

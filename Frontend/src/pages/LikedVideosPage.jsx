@@ -20,12 +20,11 @@ const LikedVideosPage = () => {
       try {
         setLoading(true)
         const res = await getLikedVideos()
-        console.log(res.data.data)
+     
         setVideos(res?.data?.data ?? [])
         setVideoCount(res?.data?.data?.length)
 
       } catch (err) {
-        console.error(err)
         const message = err?.response?.data?.message || 'An error occurred while fetching liked videos.'
         setError(message)
       } finally {

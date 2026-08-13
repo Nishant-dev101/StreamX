@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { PALETTE, TYPOGRAPHY } from '../utils/styles'
-
+import { getVideoById } from '../services/videos.service'
+import { useNavigate } from 'react-router-dom'
 
 
 
@@ -21,7 +22,7 @@ function formatDuration(duration) {
 }
 
 function FormatPublishedDate(createdAt) {
-  console.log(createdAt)
+
   const created = new Date(createdAt);
   const now = new Date();
   const diffInDays = Math.floor(
@@ -39,10 +40,14 @@ function FormatPublishedDate(createdAt) {
 
 
 const VideoCard = ({ video }) => {
-  const { thumbnail, title, owner, views, duration } = video
+  const { thumbnail, title, owner, views, duration, _id} = video
   const { card, ink, muted, active, railText, accent } = PALETTE
   const [isHovered, setIsHovered] = useState(false)
+  const navigate = useNavigate();
 
+  const handleVideoPlay = () => {
+    navigate(`/video/videoPlayerPage/${_id}`)
+  }
   
  
  
@@ -54,7 +59,7 @@ const VideoCard = ({ video }) => {
         >
         <div
         className="relative overflow-hidden rounded-md transition-colors duration-200"
-       
+        onClick={handleVideoPlay}
          >
         {thumbnail ? (
           <img

@@ -23,18 +23,14 @@ const Home = () => {
 
     useEffect(() => {
         const fetchVideos = async () => {
-            console.log("user in home ", user)
+       
             try {
                 setLoading(true);
                 const res = await getVideos();
-                console.log("response GetALL videos")
-                console.log(res);
                 setVideos(res?.data?.data);
             } catch (error) {
-                console.error(error);
                 const errorMessage = error?.response?.data?.message || "An error occurred while fetching videos.";
                 setError(errorMessage);
-                console.log(errorMessage)
             }finally {
                 setLoading(false);
             }
@@ -43,7 +39,7 @@ const Home = () => {
         fetchVideos();
     }, [])
 
-    console.log(error)
+   
 
 
     if (loading) return  <Loading/>
