@@ -3,11 +3,12 @@ import { comment } from "../models/comment.model.js";
 import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 
+
 const getAllComments = async (req, res, next) => {
   const { videoId } = req.params;
 
   if (!videoId || !mongoose.Types.ObjectId.isValid(videoId)) {
-    throw new ApiError(401, "Invalid Request");
+    return res.status(401).json( new  ApiError(401, "Invalid Request"))
   }
 
   const comments = await comment.aggregate([
@@ -24,6 +25,7 @@ const getAllComments = async (req, res, next) => {
           {
             $project: {
               fullName: 1,
+
               coverImage: 1,
               avatar: 1,
               userName: 1,
@@ -31,16 +33,18 @@ const getAllComments = async (req, res, next) => {
           },
         ],
       },
-    },
+    },{
+      $sort: { createdAt: -1 },
+    }
   ]);
 
   if (!comments) {
-    throw new ApiError(402, "something went wrong while fetching comments");
+    return res.status(402).json(new ApiError(402, "something went wrong while fetching comments"));
   }
 
   return res
     .status(200)
-    .json(new ApiResponse(201, comments, "succesfully fetched the comments"));
+    .json(new ApiResponse(200, comments, "succesfully fetched the comments"));
 };
 
 
@@ -49,13 +53,14 @@ const getAllComments = async (req, res, next) => {
 const AddComment = async (req, res, next) => {
   const { videoId } = req.params;
   const { content } = req.body;
+  console.log("landed in add comment controller", req.body, content);
 
   if (!videoId || !mongoose.Types.ObjectId.isValid(videoId)) {
-    throw new ApiError(401, "Invalid Request");
+    return res.status(401).json(new ApiError(401, "Invalid Request"));
   }
 
   if (!content) {
-    throw new ApiError(402, "Comment should have a content");
+    return res.status(402).json(new ApiError(402, "Comment should have a content"));
   }
 
   const createdComment = await comment.create({
@@ -64,7 +69,7 @@ const AddComment = async (req, res, next) => {
     video: videoId,
   });
 
-  if (!createdComment) throw new ApiError(402, "failed to create comment");
+  if (!createdComment) return res.status(402).json(new ApiError(402, "failed to create comment"));
 
   return res
     .status(200)
@@ -78,10 +83,10 @@ const updateComment = async (req, res, next) => {
   const { newContent } = req.body;
 
   if (!videoId && !mongoose.Types.ObjectId.isValid(videoId)) {
-    throw new ApiError(403, "Invalid Request");
+    return res.status(403).json(new ApiError(403, "Invalid Request"));
   }
 
-  if (!newContent) throw new ApiError(402, "Comment should contain content");
+  if (!newContent) return res.status(402).json(new ApiError(402, "Comment should contain content"));
 
   const foundComment = await comment.findOne({
     video: videoId,
@@ -89,7 +94,7 @@ const updateComment = async (req, res, next) => {
   });
 
   if (!foundComment) {
-    throw new ApiError(402, "You are unauthorised to update Comment");
+    return res.status(402).json(new ApiError(402, "You are unauthorised to update Comment"));
   }
 
   foundComment.content = newContent;
@@ -109,7 +114,7 @@ const deleteComment = async (req, res, next) => {
   const { commentId } = req.params;
 
   if (!commentId || !mongoose.Types.ObjectId.isValid(commentId)) {
-    throw new ApiError(402, "Invalid Request");
+    return res.status(402).json(new ApiError(402, "Invalid Request"));
   }
 
   const foundcomment = await comment.findOneAndDelete(
@@ -124,7 +129,7 @@ const deleteComment = async (req, res, next) => {
   console.log(foundcomment);
 
   if (!foundcomment)
-    throw new ApiError(402, "you are unauthorised to delete Comment");
+    return res.status(402).json(new ApiError(402, "you are unauthorised to delete Comment"));
 
   return res
     .status(200)
