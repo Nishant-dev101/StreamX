@@ -1,15 +1,16 @@
 import { createBrowserRouter } from "react-router-dom";
 
-import { Login } from "../pages/Login";
-import { Register } from "../pages/Register";
-import MainLayout from "../Layouts/mainLayout";
-import LikedVideosPage from "../pages/LikedVideosPage";
-import Home from "../pages/Home";
-import { ProtectedRoute } from "../components/ProtectedRoute";
-import Subscriptions from "../pages/subscriptions";
-import UserProfile from "../pages/UserPofile";
-import Playlist from "../pages/Playlist";
-import VideoPlayPage from "../pages/VideoPlayPage";
+import { Login } from "../pages/Login"
+import { Register } from "../pages/Register"
+import MainLayout from "../Layouts/mainLayout"
+import LikedVideosPage from "../pages/LikedVideosPage"
+import Home from "../pages/Home"
+import { ProtectedRoute } from "../components/ProtectedRoute"
+import UserPage from "../pages/UserPage"
+import Playlist from "../pages/Playlist"
+import VideoPlayPage from "../pages/VideoPlayPage"
+import Subscriptions from "../pages/Subscriptions"
+import ChannelProfile from "../pages/ChannelProfile";
 
 export const router = createBrowserRouter([
   {
@@ -30,11 +31,15 @@ export const router = createBrowserRouter([
        },
        {
         path: "user",
-        element: <ProtectedRoute><UserProfile/></ProtectedRoute>
+        element: <ProtectedRoute><UserPage/></ProtectedRoute>
        },
        {
         path: "playlist",
         element: <ProtectedRoute><Playlist/></ProtectedRoute>
+       },
+       {
+        path: "channelProfile/:userId",
+        element: <ChannelProfile/>
        }
     ],
   },
