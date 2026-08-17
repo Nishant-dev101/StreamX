@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { PALETTE, TYPOGRAPHY } from '../utils/styles'
 import { getVideoById } from '../services/videos.service'
 import { useNavigate } from 'react-router-dom'
-
+import { VideoIcon } from 'lucide-react'
 
 
 function formatDuration(duration) {
@@ -65,10 +65,13 @@ const VideoCard = ({ video }) => {
           <img
             src={thumbnail}
             alt={title}
-            className="w-full h-65 object-cover transition-transform duration-200 group-hover:scale-105"
+            className="w-full object-cover transition-transform duration-200 group-hover:scale-105"
           />
         ) : (
-          <div className="h-65 w-full" style={{ backgroundColor: active }} />
+          <div className="w-full aspect-video object-cover flex gap-3 justify-center items-center transition-transform duration-200 group-hover:scale-105" style={{ backgroundColor: active }} >
+            <VideoIcon size={50} color='orange'/>
+              <p className='text-white'>No thumbnail</p>
+             </div>
         )}
 
         <span
@@ -81,9 +84,9 @@ const VideoCard = ({ video }) => {
 
       <div className="mt-2 flex gap-3">
         <div
-          className="h-9 w-9 flex-shrink-0 rounded-full"
+          className="h-9 w-9 flex-shrink-0 rounded-full flex justify-center items-center"
           style={{ backgroundColor: accent }}
-        />
+        > {owner.userName}</div>
 
         <div className="flex-1">
           <p className="text-sm font-medium" style={{ color: ink, fontFamily: TYPOGRAPHY.font }}>
