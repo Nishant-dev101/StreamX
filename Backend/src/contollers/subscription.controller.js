@@ -139,7 +139,9 @@ const getSubscribedChannels = async (req, res) => {
       }
     ])
 
-    if(!channelsSubscribedTo) throw new ApiError(402, "something went wrong")
+    console.log(channelsSubscribedTo)
+
+    if(channelsSubscribedTo.length == 0) return res.status(200).json(new ApiResponse(200,[], "No subscriptions yet"))
 
       return res
       .status(200)
