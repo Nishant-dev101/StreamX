@@ -3,6 +3,7 @@ import { Video } from "../models/video.model.js"
 import { ApiError } from "../utils/apiError.js"
 import { ApiResponse } from "../utils/apiResponse.js"
 import uploadOnCloudinary from "../utils/clodinary.js"
+import { pipeline } from "stream"
 
 const getAllVideos = async (req, res, next) => {
    
@@ -16,13 +17,36 @@ const getAllVideos = async (req, res, next) => {
     const validsortBY = validSortFields.includes(sortBy)? sortBy : "views";
     const validOrder = order == -1 ? -1 : 1;
 
-    const videos = await Video
-    .find({
-        ispublised: true
-    })
-    .sort({ [validsortBY]: validOrder})
-    .skip(skip)
-    .limit(limitInt)
+    const videos = await Video.aggregate([
+      {
+        $match: {
+          ispublised: true,
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "owner",
+          foreignField: "_id",
+          as: "owner",
+          pipeline: [
+            {
+              $project: {
+                userName: 1,
+                fullName: 1,
+                avatar: 1,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $sort: {
+          [validsortBY]: validOrder,
+        },
+      },
+    ]);
+
 
     return res.status(200).json(
     new ApiResponse(
@@ -228,7 +252,25 @@ const getVideoById = async (req, res, next) => {
         return res.status(400).json(new ApiResponse(400, null, "Invalid video ID"));
     }
 
-     const video = await Video.findById(id);
+
+    const video = await Video.findById(id).populate("owner", "avatar userName fullName")
+   
+    //  const video = await Video.aggregate([
+    //     {
+    //         $match :{
+    //         _id: new mongoose.Types.ObjectId(id)
+    //      }
+    //     },
+    //     {
+    //         $lookup: {
+    //             from: 'users',
+    //             localField: 'owner',
+    //             foreignField: '_id',
+    //             as: 'owner'
+    //         }
+    //     }
+         
+    //  ])
 
      if(!video){
         return res.status(404).json(new ApiResponse(404, null, "Video not found"));
@@ -237,6 +279,55 @@ const getVideoById = async (req, res, next) => {
      return res.status(200).
      json(new ApiResponse(200, video, "Video fetched successfully"));
     }
+
+
+
+    const getUserVideos = async (req, res, next) => {
+    const { userId } = req.params;
+
+    if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+        return res.status(400).json(new ApiError(400, "Invalid user ID"));
+    }
+
+    const videos = await Video.aggregate([
+        {
+            $match: {
+                owner : new mongoose.Types.ObjectId(userId)
+            }
+        },
+        {
+        $lookup: {
+          from: "users",
+          localField: "owner",
+          foreignField: "_id",
+          as: "owner",
+          pipeline: [
+            {
+              $project: {
+                userName: 1,
+                fullName: 1,
+                avatar: 1,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $sort: {
+          createdAt: -1 
+        },
+      },
+    
+    ])
+
+    if (!videos) {
+        return res.status(404).json(new ApiError(404, "No videos found for this user"));
+    }
+
+    return res.status(200).json(
+        new ApiResponse(200, videos, "User videos fetched successfully")
+    );
+}
      
 
 export { 
@@ -246,5 +337,6 @@ export {
     updateVideo,
     deleteVideo,
     togglePublisedStatus,
-    getVideoById
+    getVideoById,
+    getUserVideos
 }
