@@ -7,7 +7,7 @@ const createTweet = async (req, res) => {
   //TODO: create tweet
   const { content } = req.body;
 
-  if (!content) throw new ApiError(403, "content should not be empty");
+  if (!content) return res.status(403).json(new ApiError(403, "content should not be empty"));
 
   const createdtweet = await tweet.create({
     content,
@@ -15,7 +15,7 @@ const createTweet = async (req, res) => {
   });
 
   if (!createdtweet) {
-    throw new ApiResponse(402, "something went wrong");
+    return res.status(402).json(new ApiError(402, "something went wrong"));
   }
 
   return res
@@ -55,7 +55,7 @@ const getUserTweets = async (req, res) => {
   ]);
 
   if (!tweets) {
-    throw new ApiError(402, "could not find the tweets");
+    return res.status(402).json(new ApiError(402, "could not find the tweets"));
   }
 
   return res
@@ -71,17 +71,17 @@ const updateTweet = async (req, res) => {
   const { newContent } = req.body;
 
   if (!tweetId || !mongoose.Types.ObjectId.isValid(tweetId)) {
-    throw new ApiError(402, "Invalid request");
+    return res.status(402).json(new ApiError(402, "Invalid request"));
   }
 
    const foundTweet = await tweet.findById(tweetId)
 
    if (!foundTweet) {
-     throw new ApiError(404, "requested Tweet does not exists")    
+     return res.status(404).json(new ApiError(404, "requested Tweet does not exists"));
    }
 
    if (foundTweet.owner.toString() !== (req.user._id).toString()) {
-    throw new ApiError(403, "unauthorised Request")
+    return res.status(403).json(new ApiError(403, "unauthorised Request"));
    }
   const updatedTweet = await tweet.findByIdAndUpdate(
     tweetId,
@@ -94,7 +94,7 @@ const updateTweet = async (req, res) => {
   );
 
   if (!updatedTweet) {
-    throw new ApiError(402, "something went wrong while updating tweet");
+    return res.status(402).json(new ApiError(402, "something went wrong while updating tweet"));
   }
 
   return res
@@ -109,23 +109,23 @@ const deleteTweet = async (req, res) => {
   const { tweetId } = req.params;
 
   if (!tweetId || !mongoose.Types.ObjectId.isValid(tweetId)) {
-    throw new ApiError(402, "Invalid request");
+    return res.status(402).json(new ApiError(402, "Invalid request"));
   }
 
   const foundTweet = await tweet.findById(tweetId)
 
    if (!foundTweet) {
-     throw new ApiError(404, "requested Tweet does not exists")    
+     return res.status(404).json(new ApiError(404, "requested Tweet does not exists"));
    }
    
    if (foundTweet.owner.toString() !== (req.user._id).toString()) {
-    throw new ApiError(403, "unauthorised Request")
+    return res.status(403).json(new ApiError(403, "unauthorised Request"));
    }
 
   const deletedResponse = await tweet.findByIdAndDelete(tweetId);
 
   if (!deletedResponse) {
-    throw new ApiError(404, "somethinng went wrong")
+    return res.status(404).json(new ApiError(404, "somethinng went wrong"));
   }
   return res
     .status(200)
