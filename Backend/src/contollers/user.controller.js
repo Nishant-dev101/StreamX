@@ -424,19 +424,47 @@ const updateUserCoverImage = async (req, res, next) => {
 
 const getUserChannelProfile = async ( req, res, next ) => {
        
-     const { username } = req.params
+     const { userId } = req.params
 
-      if (!username?.trim()) {
-         throw new ApiError(400, " username is Missing ");
+      if (!userId) {
+         return res.status(400).json(new ApiError(400, "User ID is required"));
       }
-        let channel;
+
+      if (!mongoose.Types.ObjectId.isValid(userId)) {
+         return res.status(400).json(new ApiError(400, "Invalid User ID format"));
+      }
+
      try {
-       channel = await User.aggregate([
+       const channel = await User.aggregate([
           {
            $match: {
-             userName: username.toLowerCase()
+             _id: new mongoose.Types.ObjectId(userId)
            },
           },
+          {
+            $lookup: {
+              from: 'videos',
+              localField: '_id',
+              foreignField: 'owner',
+              as: 'videos',
+              pipeline: [
+                {
+                  $match: {
+                    ispublised: true
+                  }
+                }
+              ]
+            }
+          },
+          {
+            $lookup: {
+              from: 'tweets',
+              localField: '_id',
+              foreignField: 'owner',
+              as: 'Tweets'
+            }
+          },
+
           {
            $lookup: {
              from: "subscriptions",
@@ -489,26 +517,26 @@ const getUserChannelProfile = async ( req, res, next ) => {
                avatar: 1,
                coverImage: 1,
                email: 1,
-               subscribedTo: 1
+               subscribedTo: 1,
+               videos: 1,
+               Tweets: 1
                 
              }
            }
-          
-          
        ])
-     } catch (error) {
-       throw new ApiError(401, error.message)
-     }
 
-      if(!channel?.length){
-        throw new ApiError(404, "channnel does not exists")
-      }
+       if(!channel?.length){
+        return res.status(404).json(new ApiError(404, "User channel not found"));
+       }
 
       return res
       .status(200)
       .json( 
-        new ApiResponse(200, channel[0], "User channel fetched succesfully")
+        new ApiResponse(200, channel[0], "User channel fetched successfully")
       )
+     } catch (error) {
+       return res.status(500).json(new ApiError(500, "Error fetching channel profile: " + error.message));
+     }
     }
 
 
