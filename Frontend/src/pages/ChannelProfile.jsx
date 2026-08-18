@@ -7,6 +7,7 @@ import Loading from '../components/loading'
 import Error from '../components/error'
 import { PALETTE } from '../utils/styles'
 import VideoTray from '../components/videoTray'
+import { toggleSubscription } from '../services/subscription.service'
 
 const ChannelProfile = () => {
   const { userId } = useParams()
@@ -15,8 +16,10 @@ const ChannelProfile = () => {
   const [error, setError] = useState(null)
   const [activeTab, setActiveTab] = useState('videos')
 
+  
+
   useEffect(() => {
-    const fetchChannelProfile = async () => {
+        const fetchChannelProfile = async () => {
       try {
         setLoading(true)
         const response = await getUserChannelProfile(userId)
@@ -34,6 +37,23 @@ const ChannelProfile = () => {
       fetchChannelProfile()
     }
   }, [userId])
+
+  const handleToggleSubscription = async () => {
+               
+            setProfile( prev => ({
+               ...prev,
+                isSubscribed: !prev.isSubscribed,
+                subscribersCount: prev.isSubscribed ?
+                                    prev.subscribersCount -1 :
+                                    prev.subscribersCount + 1      
+            }))
+    try {
+         const res = await toggleSubscription(userId)
+         
+    } catch (error) {
+       console.log(error)
+    }
+  }
 
   if (loading) return <Loading />
   if (error) return <Error error={error} />
@@ -102,15 +122,18 @@ const ChannelProfile = () => {
 
             {/* Subscribe Button */}
             <button
-              className="rounded-full px-8 py-3 font-semibold transition-all duration-200"
+              className= 'rounded-full border px-8 py-3 font-semibold transition-all duration-200'
               style={{
-                backgroundColor: PALETTE.accent,
+                backgroundColor: profile.isSubscribed ? PALETTE.card : PALETTE.accent,
                 color: 'white',
+                borderColor: PALETTE.line
+                
               }}
               onMouseEnter={(e) => (e.target.style.opacity = '0.9')}
               onMouseLeave={(e) => (e.target.style.opacity = '1')}
+              onClick={ () => handleToggleSubscription()}
             >
-              Subscribe
+              { profile.isSubscribed ? 'Subscribed' : 'Subscribe' }
             </button>
           </div>
         </div>
