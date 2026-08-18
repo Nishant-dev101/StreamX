@@ -83,10 +83,18 @@ const VideoCard = ({ video }) => {
       </div>
 
       <div className="mt-2 flex gap-3">
-        <div
-          className="h-9 w-9 flex-shrink-0 rounded-full flex justify-center items-center"
+        {owner[0].avatar ?
+          <img
+            src={video.owner.avatar}
+            alt={video.owner.userName || 'Channel'}
+            className="w-10 h-10 rounded-full object-cover"
+          />
+          :
+          <div
+          className="h-9 w-9 flex-shrink-0 rounded-full flex justify-center items-center text-white font-semibold"
           style={{ backgroundColor: accent }}
-        > {owner.userName}</div>
+        > {owner[0].userName[0].toUpperCase()}</div>
+          }
 
         <div className="flex-1">
           <p className="text-sm font-medium" style={{ color: ink, fontFamily: TYPOGRAPHY.font }}>
