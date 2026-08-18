@@ -37,3 +37,8 @@ export const refreshToken = async () => {
   const res = await api.post('/user/refreshToken')
   return res
 }
+
+export const getUserChannelProfile = async (userId) => {
+  const res = await api.get(`/user/channel/${userId}`)
+  return res
+}
