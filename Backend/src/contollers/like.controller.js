@@ -2,6 +2,7 @@ import mongoose from "mongoose"
 import { comment } from "../models/comment.model.js"
 import { Like } from "../models/like.model.js"
 import { tweet } from "../models/tweet.model.js"
+import { Video } from "../models/video.model.js"
 import { ApiError } from "../utils/apiError.js"
 import { ApiResponse } from "../utils/apiResponse.js"
 
@@ -16,7 +17,7 @@ const toggleVideoLike = async (req, res) => {
     console.log(videoId);
     
        if (!videoId || !mongoose.Types.ObjectId.isValid(videoId)) {
-        throw new ApiError(401, "Invalid Request")
+        return res.status(400).json(new ApiError(400, "Invalid Request"))
        }
         
       const like = await Like.findOne({video: videoId, likedBy: req.user._id})
@@ -49,7 +50,7 @@ const toggleCommentLike = async (req, res) => {
    console.log(commentId);
     //TODO: toggle like on comment
       if (!commentId || !mongoose.Types.ObjectId.isValid(commentId)) {
-        throw new ApiError(401, "Invalid Request")
+        return res.status(400).json(new ApiError(400, "Invalid Request"))
        }
   
       const foundComment = await Like.findOne({comment: commentId, likedBy: req.user._id})
@@ -85,7 +86,7 @@ const toggleTweetLike = async (req, res) => {
     const {tweetId} = req.params
     //TODO: toggle like on tweet
     if (!tweetId|| !mongoose.Types.ObjectId.isValid(tweetId)) {
-        throw new ApiError(401, "Invalid Request")
+        return res.status(400).json(new ApiError(400, "Invalid Request"))
        }
 
       const foundTweet = await Like.findOne({tweet: tweetId, likedBy: req.user._id})
@@ -106,7 +107,7 @@ const toggleTweetLike = async (req, res) => {
         }
 
         if (!createdTweet) {
-          throw new ApiError(401, "something went wrong")
+          return res.status(500).json(new ApiError(500, "something went wrong"))
         }
 
         return res
@@ -166,7 +167,7 @@ const getLikedVideos = async (req, res) => {
     },
   ]);
 
-  if(!videos) throw new ApiError(401, "could not find liked videos")
+  if(!videos) return res.status(404).json(new ApiError(404, "could not find liked videos"))
 
   return res
   .status(200)
@@ -175,9 +176,42 @@ const getLikedVideos = async (req, res) => {
   )
 }
 
+const getVideoLikes = async (req, res) => {
+  const { videoId } = req.params
+
+  if (!videoId || !mongoose.Types.ObjectId.isValid(videoId)) {
+    return res.status(400).json(new ApiError(400, "Invalid video ID"))
+  }
+
+  const [video, likesCount, viewerLike] = await Promise.all([
+    Video.exists({ _id: videoId }),
+    Like.countDocuments({ video: videoId }),
+    req.user?._id
+      ? Like.exists({ video: videoId, likedBy: req.user._id })
+      : null,
+  ])
+
+  if (!video) {
+    return res.status(404).json(new ApiError(404, "Video not found"))
+  }
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        videoId,
+        likesCount,
+        isLiked: Boolean(viewerLike),
+      },
+      "Video likes fetched successfully",
+    ),
+  )
+}
+
 export { 
      toggleVideoLike,
      toggleCommentLike,
      toggleTweetLike,
-     getLikedVideos
+     getLikedVideos,
+     getVideoLikes,
  };
