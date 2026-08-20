@@ -21,3 +21,8 @@ export const getVideoById = async (id) => {
    const res = await api.get(`/video/getVideoById/${id}`)
    return res
 }
+
+export const getUserVideos = async (userId) => {
+   const res = await api.get(`/video/getUserVideos/${userId}`)
+   return res
+}
