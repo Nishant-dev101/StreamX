@@ -9,6 +9,8 @@ const toggleSubscription = async (req, res) => {
   const { channelId } = req.params;
   // TODO: toggle subscription
 
+  console.log(channelId)
+
   const isSubscribed = await Subscription.findOne({
     channel: channelId,
     subscriber: req.user._id,
@@ -20,7 +22,7 @@ const toggleSubscription = async (req, res) => {
       subscriber: req.user._id,
     });
 
-    if (!response) throw new ApiError(402, "something went wrong");
+    if (!response) return res.status(500).json(new ApiError(500, "something went wrong"));
     return res
       .status(200)
       .json(
@@ -33,7 +35,7 @@ const toggleSubscription = async (req, res) => {
       subscriber: req.user._id,
     });
 
-    if (!response) throw new ApiError(402, "Somethimg went wrong");
+    if (!response) return res.status(500).json(new ApiError(500, "Somethimg went wrong"));
 
     return res
       .status(200)
@@ -51,7 +53,7 @@ const getUserChannelSubscribers = async (req, res) => {
   const { channelId } = req.params;
 
     if (!channelId || !mongoose.Types.ObjectId.isValid(channelId)) {
-       throw new ApiError(401, "Invalid Request")
+      return res.status(400).json(new ApiError(400, "Invalid Request"))
     }
 
    const subscribers = await Subscription.aggregate([
@@ -89,7 +91,7 @@ const getUserChannelSubscribers = async (req, res) => {
      },
    ]);
 
-    if(!subscribers) throw new ApiError(402, "something went wrong while fetching subscribers")
+    if(!subscribers) return res.status(500).json(new ApiError(500, "something went wrong while fetching subscribers"))
 
      return res
      .status(200)

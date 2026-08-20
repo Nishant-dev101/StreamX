@@ -128,7 +128,7 @@ const getChannelVideos = async (req, res) => {
         }
       ])
     if (!videos) {
-        throw new ApiError(404, "could not find any videos")
+        return res.status(404).json(new ApiError(404, "could not find any videos"))
     }
 
     return res

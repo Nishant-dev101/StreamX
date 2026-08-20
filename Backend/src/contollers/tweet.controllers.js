@@ -7,7 +7,7 @@ const createTweet = async (req, res) => {
   //TODO: create tweet
   const { content } = req.body;
 
-  if (!content) return res.status(403).json(new ApiError(403, "content should not be empty"));
+  if (!content) return res.status(400).json(new ApiError(400, "content should not be empty"));
 
   const createdtweet = await tweet.create({
     content,
@@ -15,7 +15,7 @@ const createTweet = async (req, res) => {
   });
 
   if (!createdtweet) {
-    return res.status(402).json(new ApiError(402, "something went wrong"));
+    return res.status(500).json(new ApiError(500, "something went wrong"));
   }
 
   return res
@@ -55,7 +55,7 @@ const getUserTweets = async (req, res) => {
   ]);
 
   if (!tweets) {
-    return res.status(402).json(new ApiError(402, "could not find the tweets"));
+    return res.status(404).json(new ApiError(404, "could not find the tweets"));
   }
 
   return res
@@ -71,7 +71,7 @@ const updateTweet = async (req, res) => {
   const { newContent } = req.body;
 
   if (!tweetId || !mongoose.Types.ObjectId.isValid(tweetId)) {
-    return res.status(402).json(new ApiError(402, "Invalid request"));
+    return res.status(400).json(new ApiError(400, "Invalid request"));
   }
 
    const foundTweet = await tweet.findById(tweetId)
@@ -94,7 +94,7 @@ const updateTweet = async (req, res) => {
   );
 
   if (!updatedTweet) {
-    return res.status(402).json(new ApiError(402, "something went wrong while updating tweet"));
+    return res.status(500).json(new ApiError(500, "something went wrong while updating tweet"));
   }
 
   return res
@@ -109,7 +109,7 @@ const deleteTweet = async (req, res) => {
   const { tweetId } = req.params;
 
   if (!tweetId || !mongoose.Types.ObjectId.isValid(tweetId)) {
-    return res.status(402).json(new ApiError(402, "Invalid request"));
+    return res.status(400).json(new ApiError(400, "Invalid request"));
   }
 
   const foundTweet = await tweet.findById(tweetId)

@@ -10,7 +10,7 @@ const createPlaylist = async (req, res) => {
     const {name, description} = req.body
 
     if (!name) {
-        throw new ApiError(401, "Playlist name is required")
+        return res.status(400).json(new ApiError(400, "Playlist name is required"))
     }
 
         const playlist =  await Playlist.create({
@@ -23,7 +23,7 @@ const createPlaylist = async (req, res) => {
     
 
     if (!playlist) {
-        throw new ApiError(403, "something went wrong while creating playlist")
+        return res.status(500).json(new ApiError(500, "something went wrong while creating playlist"))
     }
 
     return res.status(200)
@@ -36,12 +36,15 @@ const createPlaylist = async (req, res) => {
 const getUserPlaylists = async (req, res) => {
   
 
-    const playlists = await Playlist.find({
-         owner : req.user._id
-    })
+        const playlists = await Playlist.find({
+            owner : req.user._id
+        }).populate({
+           path: "videos",
+           populate: { path: "owner", select: "avatar userName fullName" }
+        })
     
     if (!playlists) {
-        throw new ApiError(401, " something went wrong while creating playlist ")
+        return res.status(500).json(new ApiError(500, " something went wrong while creating playlist "))
     }
 
     return res.status(200)
@@ -57,15 +60,21 @@ const getPlaylistById = async (req, res) => {
     const {playlistId} = req.params
    
     if(!playlistId || !mongoose.Types.ObjectId.isValid(playlistId)){
-        throw new ApiError(402, "Invalid request")
+        return res.status(400).json(new ApiError(400, "Invalid request"))
     }
 
-    const playlist = await Playlist.findById(playlistId)
+    const playlist = await Playlist.findOne({
+        _id: playlistId,
+        owner: req.user._id
+    }).populate({
+        path: "videos",
+        populate: { path: "owner", select: "avatar userName fullName" }
+    })
 
     console.log(playlist);
     
     if (!playlist) {
-        throw new ApiError(402, "something went wrong while fetching the playlist")
+        return res.status(404).json(new ApiError(404, "something went wrong while fetching the playlist"))
     }
 
 
@@ -82,10 +91,10 @@ const addVideoToPlaylist = async (req, res) => {
     
     
     if (!playlistId || !mongoose.Types.ObjectId.isValid(playlistId) || !videoId || !mongoose.Types.ObjectId.isValid(videoId)) {
-        throw new ApiError(402, "Invalid Request")
+        return res.status(400).json(new ApiError(400, "Invalid Request"))
     }
-    const playlist = await Playlist.findByIdAndUpdate(
-      playlistId,
+        const playlist = await Playlist.findOneAndUpdate(
+            { _id: playlistId, owner: req.user._id },
       {
         $addToSet: {
           videos: videoId
@@ -97,7 +106,7 @@ const addVideoToPlaylist = async (req, res) => {
     );
 
     if (!playlist) {
-        throw new ApiError(402, "Something went wrong while adding video to playlist")
+        return res.status(404).json(new ApiError(404, "Something went wrong while adding video to playlist"))
     }
     
     return res.status(200)
@@ -110,17 +119,17 @@ const removeVideoFromPlaylist = async (req, res) => {
     const {playlistId, videoId} = req.params;
 
     if (!playlistId || !mongoose.Types.ObjectId.isValid(playlistId) || !videoId || !mongoose.Types.ObjectId.isValid(videoId)) {
-        throw new ApiError(402, "Invalid Request");
+        return res.status(400).json(new ApiError(400, "Invalid Request"));
     }
 
-    const playlist = await Playlist.findByIdAndUpdate(
-        playlistId,
+    const playlist = await Playlist.findOneAndUpdate(
+        { _id: playlistId, owner: req.user._id },
         { $pull: { videos: videoId } },
         { new: true } // Return the updated document
     );
 
     if (!playlist) {
-        throw new ApiError(402, "Something went wrong while removing the video");
+        return res.status(404).json(new ApiError(404, "Something went wrong while removing the video"));
     }
 
     return res.status(200).json(
@@ -134,15 +143,16 @@ const deletePlaylist = async (req, res) => {
     const {playlistId} = req.params
 
  if(!playlistId || !mongoose.Types.ObjectId.isValid(playlistId)){
-    throw new ApiError(403, " Invalid Request ")
+    return res.status(400).json(new ApiError(400, " Invalid Request "))
  }
 
  const deletedResponse = await Playlist.deleteOne({
-    _id: playlistId
+     _id: playlistId,
+     owner: req.user._id
  })
 
  if(!deletedResponse){
-    throw new ApiError(402, "something went wrong while deleting video")
+    return res.status(500).json(new ApiError(500, "something went wrong while deleting video"))
  }
  
  return res.status(200)
@@ -157,14 +167,14 @@ const updatePlaylist = async (req, res) => {
     const {name, description} = req.body
     
     if (!playlistId || !mongoose.Types.ObjectId.isValid(playlistId)) {
-        throw new ApiError(402, "Invalid Request")
+        return res.status(400).json(new ApiError(400, "Invalid Request"))
     }
     if (!name || !description) {
-        throw new ApiError(402, "All fields are required")
+        return res.status(400).json(new ApiError(400, "All fields are required"))
     }
 
-    const playlist = await Playlist.findByIdAndUpdate(
-        playlistId,
+    const playlist = await Playlist.findOneAndUpdate(
+        { _id: playlistId, owner: req.user._id },
         {
             $set: {
               name,
@@ -176,7 +186,7 @@ const updatePlaylist = async (req, res) => {
     )
 
     if (!playlist) {
-        throw new ApiError(402, "something went wrong while updating playlist")
+        return res.status(404).json(new ApiError(404, "something went wrong while updating playlist"))
     }
 
     return res.status(200)

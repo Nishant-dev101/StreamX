@@ -64,7 +64,7 @@ const getSearchedVideos = async (req, res, next) => {
     const { query, page = 1, limit = 10 } = req.query
 
     if (!query) {
-        throw new ApiError(401, "Query is undefined")
+        return res.status(400).json(new ApiError(400, "Query is undefined"))
     }
 
     const pageInt = parseInt(page)
@@ -92,7 +92,7 @@ const uploadAVideo = async (req, res, next) => {
     
 
     if (!title || !description || !req.files?.thumbnail || !req.files?.videoFile) {
-        throw new ApiError(401, "All video details (title, description, thumbnail, videoFile) are required");
+        return res.status(400).json(new ApiError(400, "All video details (title, description, thumbnail, videoFile) are required"));
     }
 
     const videoFileLocalPath = req.files.videoFile[0].path;
@@ -102,7 +102,7 @@ const uploadAVideo = async (req, res, next) => {
     const thumbnailFile = await uploadOnCloudinary(thumbnailLocalPath);
 
     if (!videoFile || !thumbnailFile) {
-        throw new ApiError(402, "Error occurred while uploading files to Cloudinary");
+        return res.status(500).json(new ApiError(500, "Error occurred while uploading files to Cloudinary"));
     }
 
     const document = await Video.create({
@@ -128,13 +128,13 @@ const updateVideo = async (req, res, next) => {
     
 
     if( !newTitle || !description || !req.file){
-    throw new ApiError(401, " All fields are required ")
+    return res.status(400).json(new ApiError(400, " All fields are required "))
     }
 
     const thumbnail = await uploadOnCloudinary(req.file.path)
 
     if (!thumbnail) {
-        throw new ApiError(403, " Error occured while updating thumbail ")
+        return res.status(500).json(new ApiError(500, " Error occured while updating thumbail "))
     }
   
     
@@ -146,11 +146,11 @@ const updateVideo = async (req, res, next) => {
      )
     
      if (!video) {
-        throw new ApiError(401," Video does not exists ")
+        return res.status(404).json(new ApiError(404," Video does not exists "))
      }
      
      if (video.owner.toString() !== req.user._id.toString()) {
-        throw new ApiError(401,"Unauthorised request")
+        return res.status(403).json(new ApiError(403,"Unauthorised request"))
      }
 
      video.title = newTitle
@@ -174,7 +174,7 @@ const deleteVideo = async (req, res, next) => {
     const { title } = req.params
 
     if (!title) {
-        throw new ApiError(403, "Give a valid Title")
+        return res.status(400).json(new ApiError(400, "Give a valid Title"))
     }
      
     console.log(title);
@@ -191,11 +191,11 @@ const deleteVideo = async (req, res, next) => {
      
 
      if (!video) {
-        throw new ApiError(401, "could not find the requested video")
+        return res.status(404).json(new ApiError(404, "could not find the requested video"))
      }
 
      if (video.owner.toString() !== req.user._id.toString()) {
-          throw new ApiError(401, " unauthorised request to delete this video" )
+          return res.status(403).json(new ApiError(403, " unauthorised request to delete this video" ))
      }
 
      const deleteResponse = await Video.deleteOne({ 
@@ -204,7 +204,7 @@ const deleteVideo = async (req, res, next) => {
     })
 
      if (!deleteResponse.acknowledged) {
-        throw new ApiError(401, " failed to delete Video ")
+        return res.status(500).json(new ApiError(500, " failed to delete Video "))
      }
 
      return res.status(200)
@@ -219,7 +219,7 @@ const togglePublisedStatus = async (req, res, next) => {
     const { title } = req.params
 
     if (!title) {
-        throw new ApiError(401, " Title is invalid ")
+        return res.status(400).json(new ApiError(400, " Title is invalid "))
     }
 
     const video = await Video.findOne({
@@ -231,7 +231,7 @@ const togglePublisedStatus = async (req, res, next) => {
     
 
     if (!video) {
-        throw new ApiError(401, " unable to find video ")
+        return res.status(404).json(new ApiError(404, " unable to find video "))
     }
 
     video.ispublised = !video.ispublised
