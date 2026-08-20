@@ -222,7 +222,7 @@ const refreshAccesToken = async ( req, res, next ) => {
   const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken // for cookies sent from mobile apps
   
   if(!incomingRefreshToken){
-  throw new ApiError(401, "unauthorised request")
+  return res.status(401).json(new ApiError(401, "unauthorised request"))
   }
   
   const decodedToken = jwt.verify(incomingRefreshToken, 
@@ -231,12 +231,12 @@ const refreshAccesToken = async ( req, res, next ) => {
       const user = await User.findById(decodedToken._id)
   
       if(!user){
-        throw new ApiError(401, "Invalid refresh Token")
+        return res.status(401).json(new ApiError(401, "Invalid refresh Token"))
       }
       
   
    if (incomingRefreshToken !== user.refreshToken) {
-    throw new ApiError(401, "Invalid refresh Token")
+    return res.status(401).json(new ApiError(401, "Invalid refresh Token"))
    }
 
     const options = {
@@ -272,7 +272,7 @@ const changeCurrentPassword = async ( req, res, next ) => {
     const { oldPassword, newPassword} = req.body
 
     if (!oldPassword) {
-      throw new ApiError(401, "old password is not defined")
+      return res.status(400).json(new ApiError(400, "old password is not defined"))
     }
 
     const validuser = await User.findById(req.user._id)
@@ -283,7 +283,7 @@ const changeCurrentPassword = async ( req, res, next ) => {
       const ispasswordvalid = await validuser.isPasswordCorrect(oldPassword)
 
       if(!ispasswordvalid){
-            throw new ApiError(401, "Incorrect old Password")
+        return res.status(401).json(new ApiError(401, "Incorrect old Password"))
       }
 
       validuser.password = newPassword
@@ -320,9 +320,9 @@ const updateUserDetails = async ( req, res, next) => {
    const { fullName, email } = req.body
 
    if ( !fullName || !email ) {
-       throw new ApiError(
-        401, "All fields are required"
-       )
+       return res.status(400).json(new ApiError(
+      400, "All fields are required"
+       ))
       }
 
       const user =await User.findByIdAndUpdate(
@@ -355,13 +355,13 @@ const updateUserAvatar = async (req, res, next) => {
                                              // file uploaded in multer at middleware
  
      if(!avatarFilepath){
-      throw new ApiError( 400, " Avatar file Missing ")
+      return res.status(400).json(new ApiError(400, " Avatar file Missing "))
      }
 
      const response = await uploadOnCloudinary(avatarFilepath)
 
      if(!response.url){
-        throw new ApiError( 400, " Error while uploading avatar File ")
+        return res.status(500).json(new ApiError(500, " Error while uploading avatar File "))
      }
 
      const user = await User.findByIdAndUpdate(
@@ -390,13 +390,13 @@ const updateUserCoverImage = async (req, res, next) => {
      const UserCoverImage = req.file?.path
  
      if(!UserCoverImage){
-      throw new ApiError( 400, "UserCoverImage file Missing ")
+      return res.status(400).json(new ApiError(400, "UserCoverImage file Missing "))
      }
 
      const response = await uploadOnCloudinary(UserCoverImage)
 
      if(!response.url){
-        throw new ApiError( 400, " Error while uploading UserCoverImage File ")
+        return res.status(500).json(new ApiError(500, " Error while uploading UserCoverImage File "))
      }
 
      const user = await User.findByIdAndUpdate(
@@ -426,6 +426,9 @@ const getUserChannelProfile = async ( req, res, next ) => {
        
      const { userId } = req.params
 
+     console.log("userid in getUserProfile ", userId)
+     console.log("typeof:", typeof userId);
+
       if (!userId) {
          return res.status(400).json(new ApiError(400, "User ID is required"));
       }
@@ -434,96 +437,119 @@ const getUserChannelProfile = async ( req, res, next ) => {
          return res.status(400).json(new ApiError(400, "Invalid User ID format"));
       }
 
+       const viewerId = req.user?._id;
+
      try {
        const channel = await User.aggregate([
-          {
+         {
            $match: {
-             _id: new mongoose.Types.ObjectId(userId)
+             _id: new mongoose.Types.ObjectId(userId),
            },
-          },
-          {
-            $lookup: {
-              from: 'videos',
-              localField: '_id',
-              foreignField: 'owner',
-              as: 'videos',
-              pipeline: [
-                {
-                  $match: {
-                    ispublised: true
-                  }
-                }
-              ]
-            }
-          },
-          {
-            $lookup: {
-              from: 'tweets',
-              localField: '_id',
-              foreignField: 'owner',
-              as: 'Tweets'
-            }
-          },
+         },
+         {
+           $lookup: {
+             from: "videos",
+             localField: "_id",
+             foreignField: "owner",
+             as: "videos",
+             pipeline: [
+               {
+                 $match: {
+                   ispublised: true,
+                 },
+               },
+               {
+                 $lookup: {
+                   from: "users",
+                   localField: "owner",
+                   foreignField: "_id",
+                   as: "owner",
+                   pipeline: [
+                     {
+                       $project: {
+                         userName: 1,
+                         fullName: 1,
+                         avatar: 1,
+                       },
+                     },
+                   ],
+                 },
+               },
+             ],
+           },
+         },
+         {
+           $lookup: {
+             from: "tweets",
+             localField: "_id",
+             foreignField: "owner",
+             as: "Tweets",
+           },
+         },
 
-          {
+         {
            $lookup: {
              from: "subscriptions",
              localField: "_id",
              foreignField: "channel",
              as: "subscribers",
-             pipeline: [{
-              $project: {
-                subscriber: 1
-              }
-             }]
-           }
-          },
-          {
+             pipeline: [
+               {
+                 $project: {
+                   subscriber: 1,
+                 },
+               },
+             ],
+           },
+         },
+         {
            $lookup: {
              from: "subscriptions",
              localField: "_id",
              foreignField: "subscriber",
              as: "subscribedTo",
-             pipeline: [{
-              $project: {
-                channel: 1
-              }
-             }]
-          }},
-          {
-            $addFields: {
-             subscribersCount: {
-               $size: "$subscribers"
-             },
-               channelsSubscribedToCount: {
-               $size: "$subscribedTo"
+             pipeline: [
+               {
+                 $project: {
+                   channel: 1,
+                 },
                },
-               isSubscribed: {
-               $cond: {
-                 if: {$in: [req.user._id, "$subscribers.subscriber"]},
-                 then: true,
-                 else: false
-               }
-               }
-             }
+             ],
            },
-           {
-             $project: {
-               fullName: 1,
-               userName: 1,
-               subscribersCount: 1,
-               channelsSubscribedToCount: 1,
-               isSubscribed: 1,
-               avatar: 1,
-               coverImage: 1,
-               email: 1,
-               subscribedTo: 1,
-               videos: 1,
-               Tweets: 1
-                
-             }
-           }
-       ])
+         },
+         {
+           $addFields: {
+             subscribersCount: {
+               $size: "$subscribers",
+             },
+             channelsSubscribedToCount: {
+               $size: "$subscribedTo",
+             },
+             isSubscribed: {
+               $cond: [
+                 Boolean(viewerId),
+                 { $in: [viewerId, "$subscribers.subscriber"] },
+                 false,
+               ],
+             },
+           },
+         },
+         {
+           $project: {
+             fullName: 1,
+             userName: 1,
+             subscribersCount: 1,
+             channelsSubscribedToCount: 1,
+             isSubscribed: 1,
+             avatar: 1,
+             coverImage: 1,
+             email: 1,
+             subscribedTo: 1,
+             videos: 1,
+             Tweets: 1,
+           },
+         },
+       ]);
 
        if(!channel?.length){
         return res.status(404).json(new ApiError(404, "User channel not found"));
@@ -588,7 +614,7 @@ const getWatchHistory = async ( req, res, next) => {
             )
           )
 } catch (error) {
-        throw new ApiError(400, error.message)
+  return res.status(500).json(new ApiError(500, error.message))
        } 
     }
 
