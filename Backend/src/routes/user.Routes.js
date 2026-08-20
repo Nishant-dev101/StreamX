@@ -14,7 +14,7 @@ import {
 
 } from "../contollers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
-import { verifyJWT } from "../middlewares/auth.middleware.js";
+import { optionalVerifyJWT, verifyJWT } from "../middlewares/auth.middleware.js";
 
 const router = Router();
 
@@ -44,6 +44,6 @@ router.patch(
   upload.single("coverImage"),
   updateUserCoverImage,
 );
-router.get("/user/channel/:userId", verifyJWT, getUserChannelProfile);
+router.get("/user/channel/:userId", optionalVerifyJWT, getUserChannelProfile);
 router.get("/user/WatchHistory", verifyJWT, getWatchHistory);
 export default router;
