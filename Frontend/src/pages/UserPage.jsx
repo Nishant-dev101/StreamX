@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { PALETTE, TYPOGRAPHY } from '../utils/styles'
-import VideoCard from '../components/VideoCard'
 import { getUserVideos } from '../services/videos.service'
 import { getUserTweets } from '../services/tweet.service'
 import Loading from '../components/loading'
@@ -16,6 +16,7 @@ const UserPage = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [ activeTab , setActiveTab ] = useState('videos')
+  const navigate = useNavigate()
 
   useEffect(() => {
     const fetchUserContent = async () => {
@@ -103,6 +104,19 @@ const UserPage = () => {
                 </div>
               </div>
             </div>
+
+            <div className="w-full sm:w-auto">
+              <button 
+              type="button"
+              onClick={() => navigate('/update-profile')}
+              className="w-full rounded-xl border px-4 py-2 text-sm font-semibold transition-colors hover:bg-white/10 sm:w-auto"
+              style={{ borderColor: PALETTE.line, color: PALETTE.ink }}
+              onMouseEnter={(event) => (event.currentTarget.style.borderColor = PALETTE.accent)}
+              onMouseLeave={(event) => (event.currentTarget.style.borderColor = PALETTE.line)}
+              >
+                Update Details
+              </button>
+            </div>
           </div>
           
         </div>
@@ -121,12 +135,6 @@ const UserPage = () => {
          >
             Tweets
          </button>
-         <button
-         onClick = { () => setActiveTab('subscriptions')}
-          className = { activeTab == 'subscriptions' && 'border-b-2 border-accent'}
-         >
-           Subscriptions
-         </button>
       </div>
 
       {/* Content Sections */}
@@ -136,7 +144,7 @@ const UserPage = () => {
           <h2 className="text-2xl font-bold mb-6" style={{ color: PALETTE.ink, fontFamily: TYPOGRAPHY.font }}>
               { activeTab == 'videos' && 'Videos'}
               { activeTab == 'tweets' && 'Tweets'}
-              { activeTab == 'subscriptions' && 'Subscriptions'}
+             
           </h2>
                { activeTab == 'videos' && <VideoTray videos = {videos} />}
                { activeTab == 'tweets' &&  <Tweets tweets = {tweets}/>}

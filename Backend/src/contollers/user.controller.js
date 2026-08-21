@@ -317,20 +317,20 @@ const getCurrentUser = async ( req, res, next) => {
 
 const updateUserDetails = async ( req, res, next) => {
 
-   const { fullName, email } = req.body
+   const { fullName, userName } = req.body
 
-   if ( !fullName || !email ) {
+   if ( !fullName || !userName) {
        return res.status(400).json(new ApiError(
       400, "All fields are required"
        ))
       }
 
-      const user =await User.findByIdAndUpdate(
+      const user = await User.findByIdAndUpdate(
         req.user?._id,
         {
           $set: {
             fullName,
-            email
+            userName
           }
         },
         {new : true}
