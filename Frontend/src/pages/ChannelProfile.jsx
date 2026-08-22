@@ -1,12 +1,13 @@
 
 
 import React, { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { getUserChannelProfile } from '../services/auth.service'
 import Loading from '../components/loading'
 import Error from '../components/error'
 import { PALETTE } from '../utils/styles'
 import VideoTray from '../components/videoTray'
+import { useAuth } from '../contexts/AuthContext'
 import { toggleSubscription } from '../services/subscription.service'
 
 const ChannelProfile = () => {
@@ -15,6 +16,8 @@ const ChannelProfile = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [activeTab, setActiveTab] = useState('videos')
+  const { user } = useAuth()
+  const navigate = useNavigate()
 
   
 
@@ -23,6 +26,7 @@ const ChannelProfile = () => {
       try {
         setLoading(true)
         const response = await getUserChannelProfile(userId)
+
         setProfile(response.data.data)
         setError(null)
       } catch (err) {
@@ -39,7 +43,9 @@ const ChannelProfile = () => {
   }, [userId])
 
   const handleToggleSubscription = async () => {
-               
+                
+              if(!user) return
+              
             setProfile( prev => ({
                ...prev,
                 isSubscribed: !prev.isSubscribed,
@@ -120,7 +126,9 @@ const ChannelProfile = () => {
               </div>
             </div>
 
-            {/* Subscribe Button */}
+            <div className="flex flex-wrap gap-3">
+           
+         
             <button
               className= 'rounded-full border px-8 py-3 font-semibold transition-all duration-200'
               style={{
@@ -135,6 +143,7 @@ const ChannelProfile = () => {
             >
               { profile.isSubscribed ? 'Subscribed' : 'Subscribe' }
             </button>
+            </div>
           </div>
         </div>
 

@@ -41,6 +41,7 @@ function FormatPublishedDate(createdAt) {
 
 const VideoCard = ({ video }) => {
   const { thumbnail, title, owner, views, duration, _id} = video
+  const channel = Array.isArray(owner) ? owner[0] : owner
   const { card, ink, muted, active, railText, accent } = PALETTE
   const [isHovered, setIsHovered] = useState(false)
   const navigate = useNavigate();
@@ -83,17 +84,17 @@ const VideoCard = ({ video }) => {
       </div>
 
       <div className="mt-2 flex gap-3">
-        {owner[0].avatar ?
+        {channel?.avatar ?
           <img
-            src={video.owner.avatar}
-            alt={video.owner.userName || 'Channel'}
+            src={channel.avatar}
+            alt={channel.userName || 'Channel'}
             className="w-10 h-10 rounded-full object-cover"
           />
           :
           <div
           className="h-9 w-9 flex-shrink-0 rounded-full flex justify-center items-center text-white font-semibold"
           style={{ backgroundColor: accent }}
-        > {owner[0].userName[0].toUpperCase()}</div>
+        > {channel?.userName?.[0]?.toUpperCase() || 'U'}</div>
           }
 
         <div className="flex-1">
@@ -101,7 +102,7 @@ const VideoCard = ({ video }) => {
             {title}
           </p>
           <p className="text-xs" style={{ color: muted }}>
-            {owner[0].userName}
+            {channel?.userName || 'Unknown channel'}
            </p>
           <p className="text-xs" style={{ color: muted }}>
             {views} views • {FormatPublishedDate(video.createdAt)}

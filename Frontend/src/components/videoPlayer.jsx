@@ -30,13 +30,12 @@ const formatVideoDate = (createdAt) => {
 
 const VideoPlayer = ({ videoId }) => {
 
-
+   const navigate = useNavigate()
   const [video, setVideo] = useState()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [profile, setProfile] = useState(null)
   const [profileLoading, setProfileLoading] = useState(false)
-  const navigate = useNavigate()
   const [liked, setLiked] = useState(false)
   const [likesCount, setLikesCount] = useState(0)
   const [likesLoading, setLikesLoading] = useState(false)
@@ -187,6 +186,7 @@ const VideoPlayer = ({ videoId }) => {
       setSaveLoading(true)
       await addVideoToPlaylist(playlistId, videoId)
       setSavedPlaylist(playlistId)
+      setTimeout(()=> setSaveOpen(false),500)
     } catch (error) {
       console.error('Error saving video to playlist:', error)
     } finally {
@@ -226,8 +226,9 @@ const VideoPlayer = ({ videoId }) => {
 
   return (
 
-    <div className="overflow-hidden rounded-md border border-white/10 bg-[#111111]/95 shadow-[0_30px_90px_rgba(0,0,0,0.35)]">
-      <div className="aspect-[16/9] w-full bg-black">
+    <div className="relative overflow-visible rounded-md border border-white/10 bg-[#111111]/95 shadow-[0_30px_90px_rgba(0,0,0,0.35)]">
+      <div className="overflow-hidden rounded-t-md">
+        <div className="aspect-[16/9] w-full bg-black">
         <Plyr
 
           source={{
@@ -241,6 +242,7 @@ const VideoPlayer = ({ videoId }) => {
           }}
           options={options}
         />
+        </div>
       </div>
 
       <div className="space-y-5 p-5 sm:p-6">
@@ -307,6 +309,7 @@ const VideoPlayer = ({ videoId }) => {
                   <ThumbsUp size={21} className={liked ? 'fill-orange-400 text-orange-400' : 'text-white'} />
                   <span>{likesLoading ? '...' : likesCount}</span>
                 </button>
+               
                 <div className="relative">
                   <button
                     type="button"
@@ -319,22 +322,24 @@ const VideoPlayer = ({ videoId }) => {
                   </button>
 
                   {saveOpen && (
-                    <div className="absolute right-0 top-12 z-20 min-w-56 rounded-xl border p-2 shadow-xl" style={{ backgroundColor: PALETTE.surface, borderColor: PALETTE.line }}>
+                    <div className="absolute right-0 top-12 z-20 min-w-56 max-w-[calc(100vw-2rem)] rounded-xl border p-2 shadow-xl" style={{ backgroundColor: PALETTE.surface, borderColor: PALETTE.line }}>
                       <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wider" style={{ color: PALETTE.muted }}>Save to playlist</p>
-                      {playlists.length ? playlists.map((playlist) => (
-                        <button
-                          key={playlist._id}
-                          type="button"
-                          onClick={() => handleSaveToPlaylist(playlist._id)}
-                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm hover:bg-white/10"
-                          style={{ color: PALETTE.ink }}
-                        >
-                          <span>{playlist.name}</span>
-                          {savedPlaylist === playlist._id && <Check size={16} style={{ color: PALETTE.success }} />}
-                        </button>
-                      )) : (
-                        <p className="px-3 py-2 text-sm" style={{ color: PALETTE.muted }}>Create a playlist first.</p>
-                      )}
+                      <div className="max-h-64 overflow-y-auto">
+                        {playlists.length ? playlists.map((playlist) => (
+                          <button
+                            key={playlist._id}
+                            type="button"
+                            onClick={() => handleSaveToPlaylist(playlist._id)}
+                            className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm hover:bg-white/10"
+                            style={{ color: PALETTE.ink }}
+                          >
+                            <span className="truncate pr-3">{playlist.name}</span>
+                            {savedPlaylist === playlist._id && <Check size={16} className="flex-shrink-0" style={{ color: PALETTE.success }} />}
+                          </button>
+                        )) : (
+                          <p className="px-3 py-2 text-sm" style={{ color: PALETTE.muted }}>Create a playlist first.</p>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
