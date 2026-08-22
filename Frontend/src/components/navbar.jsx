@@ -18,7 +18,7 @@ const Navbar = () => {
 
   return (
     <aside
-      className={`h-screen border-r transition-all w-20 ${isOpen ? 'sm:w-64' : 'sm:w-20'}`}
+      className={`h-screen border-r transition-all w-20 sticky top-0 ${isOpen ? 'sm:w-64' : 'sm:w-20'}`}
       style={{ backgroundColor: navbar, color: railText, borderColor: line }}
     >
       <nav className="flex h-full flex-col px-2 py-4 sm:px-3">
