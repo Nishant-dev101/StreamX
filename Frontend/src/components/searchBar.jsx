@@ -1,15 +1,19 @@
 import React, { useState } from 'react'
 import { Search, Mic } from 'lucide-react'
 import { PALETTE } from '../utils/styles'
+import { useNavigate } from 'react-router-dom'
 
 const SearchBar = ({ onSearch }) => {
   const [q, setQ] = useState('')
-  const { surface, ink, muted } = PALETTE
+  const { ink, muted } = PALETTE
+  const navigate = useNavigate()
 
   const submit = (e) => {
     e.preventDefault()
-    if (onSearch) onSearch(q)
-    else console.log('search for', q)
+    const value = q.trim()
+    if (!value) return
+    if (onSearch) onSearch(value)
+    else navigate(`/search?query=${encodeURIComponent(value)}`)
   }
 
   return (
