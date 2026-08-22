@@ -39,6 +39,19 @@ export const refreshToken = async () => {
 }
 
 export const getUserChannelProfile = async (userId) => {
+  console.log( "into services getuserProfile",userId)
   const res = await api.get(`/user/channel/${userId}`)
+  return res
+}
+
+export const updateUserDetails = async (data) => {
+  const res = await api.patch('/user/update-account', data)
+  return res
+}
+
+export const updateUserAvatar = async (avatar) => {
+  const formData = new FormData()
+  formData.append('avatar', avatar)
+  const res = await api.patch('/user/avatar', formData)
   return res
 }
