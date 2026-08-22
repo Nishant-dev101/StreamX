@@ -54,9 +54,19 @@ const UserPage = () => {
   
 
   return (
-    <div  className = " mt-4" style={{ backgroundColor: PALETTE.page, minHeight: '100vh', color: PALETTE.ink }}>
+    <div
+      className=" mt-4"
+      style={{
+        backgroundColor: PALETTE.page,
+        minHeight: "100vh",
+        color: PALETTE.ink,
+      }}
+    >
       {/* Profile Header */}
-      <div className="border-b border-white/10 pb-8" style={{ backgroundColor: PALETTE.card }}>
+      <div
+        className="border-b border-white/10 pb-8"
+        style={{ backgroundColor: PALETTE.card }}
+      >
         <div className="max-w-7xl mx-auto px-6 pt-8">
           <div className="flex gap-6 items-start">
             {/* Avatar */}
@@ -79,7 +89,10 @@ const UserPage = () => {
 
             {/* User Info */}
             <div className="flex-1 pt-4">
-              <h1 className="text-4xl font-bold mb-2" style={{ color: PALETTE.ink }}>
+              <h1
+                className="text-4xl font-bold mb-2"
+                style={{ color: PALETTE.ink }}
+              >
                 {user?.userName}
               </h1>
               <p className="text-lg" style={{ color: PALETTE.muted }}>
@@ -87,7 +100,10 @@ const UserPage = () => {
               </p>
               <div className="mt-4 flex gap-8">
                 <div>
-                  <p className="text-2xl font-bold" style={{ color: PALETTE.accent }}>
+                  <p
+                    className="text-2xl font-bold"
+                    style={{ color: PALETTE.accent }}
+                  >
                     {videos.length}
                   </p>
                   <p className="text-sm" style={{ color: PALETTE.muted }}>
@@ -95,7 +111,10 @@ const UserPage = () => {
                   </p>
                 </div>
                 <div>
-                  <p className="text-2xl font-bold" style={{ color: PALETTE.accent }}>
+                  <p
+                    className="text-2xl font-bold"
+                    style={{ color: PALETTE.accent }}
+                  >
                     {tweets.length}
                   </p>
                   <p className="text-sm" style={{ color: PALETTE.muted }}>
@@ -105,53 +124,85 @@ const UserPage = () => {
               </div>
             </div>
 
-            <div className="w-full sm:w-auto">
-              <button 
-              type="button"
-              onClick={() => navigate('/update-profile')}
-              className="w-full rounded-xl border px-4 py-2 text-sm font-semibold transition-colors hover:bg-white/10 sm:w-auto"
-              style={{ borderColor: PALETTE.line, color: PALETTE.ink }}
-              onMouseEnter={(event) => (event.currentTarget.style.borderColor = PALETTE.accent)}
-              onMouseLeave={(event) => (event.currentTarget.style.borderColor = PALETTE.line)}
+            <div className="w-full sm:w-auto flex gap-2 flex-col">
+              <button
+                type="button"
+                onClick={() => navigate("/update-profile")}
+                className="w-full rounded-xl border px-4 py-2 text-sm font-semibold transition-colors hover:bg-white/10 sm:w-auto"
+                style={{ borderColor: PALETTE.line, color: PALETTE.ink }}
+                onMouseEnter={(event) =>
+                  (event.currentTarget.style.borderColor = PALETTE.accent)
+                }
+                onMouseLeave={(event) =>
+                  (event.currentTarget.style.borderColor = PALETTE.line)
+                }
               >
-                Update Details
+                Update Profile
               </button>
+              <button
+                type="button"
+                onClick={() => navigate("/update-videos")}
+                className="w-full rounded-xl border px-4 py-2 text-sm font-semibold transition-colors hover:bg-white/10 sm:w-auto"
+                style={{ borderColor: PALETTE.line, color: PALETTE.ink }}
+                onMouseEnter={(event) =>
+                  (event.currentTarget.style.borderColor = PALETTE.accent)
+                }
+                onMouseLeave={(event) =>
+                  (event.currentTarget.style.borderColor = PALETTE.line)
+                }
+              >
+                Update Videos
+              </button>
+              
+                <button
+                type="button"
+                onClick={() => navigate("/update-tweets")}
+                className="w-full rounded-xl border px-4 py-2 text-sm font-semibold transition-colors hover:bg-white/10 sm:w-auto"
+                style={{ borderColor: PALETTE.line, color: PALETTE.ink }}
+                onMouseEnter={(event) =>
+                  (event.currentTarget.style.borderColor = PALETTE.accent)
+                }
+                onMouseLeave={(event) =>
+                  (event.currentTarget.style.borderColor = PALETTE.line)
+                }
+              >
+                Update Videos
+              </button>
+             
+              
             </div>
           </div>
-          
         </div>
-         
       </div>
-      <div className = 'flex gap-8 flex-start my-4 mx-8 p-2 border-b border-white/10'>
-         <button
-         onClick = { () => setActiveTab('videos')}
-         className = { activeTab == 'videos' && 'border-b-2 border-accent'}
-         >
-            Videos
-         </button>
-         <button
-        onClick = { () => setActiveTab('tweets')}
-         className = { activeTab == 'tweets' && 'border-b-2 border-accent'}
-         >
-            Tweets
-         </button>
+      <div className="flex gap-8 flex-start my-4 mx-8 p-2 border-b border-white/10">
+        <button
+          onClick={() => setActiveTab("videos")}
+          className={activeTab == "videos" && "border-b-2 border-accent"}
+        >
+          Videos
+        </button>
+        <button
+          onClick={() => setActiveTab("tweets")}
+          className={activeTab == "tweets" && "border-b-2 border-accent"}
+        >
+          Tweets
+        </button>
       </div>
 
       {/* Content Sections */}
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Videos Section */}
         <div className="mb-12">
-          <h2 className="text-2xl font-bold mb-6" style={{ color: PALETTE.ink, fontFamily: TYPOGRAPHY.font }}>
-              { activeTab == 'videos' && 'Videos'}
-              { activeTab == 'tweets' && 'Tweets'}
-             
+          <h2
+            className="text-2xl font-bold mb-6"
+            style={{ color: PALETTE.ink, fontFamily: TYPOGRAPHY.font }}
+          >
+            {activeTab == "videos" && "Videos"}
+            {activeTab == "tweets" && "Tweets"}
           </h2>
-               { activeTab == 'videos' && <VideoTray videos = {videos} />}
-               { activeTab == 'tweets' &&  <Tweets tweets = {tweets}/>}
+          {activeTab == "videos" && <VideoTray videos={videos} />}
+          {activeTab == "tweets" && <Tweets tweets={tweets} />}
         </div>
-
-       
-        
       </div>
 
       {error && (
@@ -160,7 +211,7 @@ const UserPage = () => {
         </div>
       )}
     </div>
-  )
+  );
 }
 
 export default UserPage

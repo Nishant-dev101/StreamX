@@ -63,8 +63,8 @@ const getSearchedVideos = async (req, res, next) => {
 
     const { query, page = 1, limit = 10 } = req.query
 
-    if (!query) {
-        return res.status(400).json(new ApiError(400, "Query is undefined"))
+    if (!query || !query.trim()) {
+      return res.status(400).json(new ApiError(400, "Search query is required"))
     }
 
     const pageInt = parseInt(page)
@@ -72,9 +72,12 @@ const getSearchedVideos = async (req, res, next) => {
     const skip = (pageInt - 1) * limitInt
 
     // Use regex for partial and case-insensitive matching
+    const escapedQuery = query.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
     const videos = await Video.find({
-        title: { $regex: query, $options: "i" } // Case-insensitive search
+      title: { $regex: escapedQuery, $options: "i" },
+      ispublised: true
     })
+      .populate("owner", "avatar userName fullName")
         .sort({ createdAt: -1 }) // Sort by newest first
         .skip(skip)
         .limit(limitInt)
@@ -122,25 +125,20 @@ const uploadAVideo = async (req, res, next) => {
 
 const updateVideo = async (req, res, next) => {
 
-    const { title } = req.params  // params used when we want to locate exact loaction                            
+  const { videoId } = req.params
     const { newTitle, description } = req.body
-    console.log(title);
-    
 
-    if( !newTitle || !description || !req.file){
+  if (!mongoose.Types.ObjectId.isValid(videoId)) {
+    return res.status(400).json(new ApiError(400, "Invalid video ID"))
+  }
+
+    if( !newTitle || !description){
     return res.status(400).json(new ApiError(400, " All fields are required "))
     }
 
-    const thumbnail = await uploadOnCloudinary(req.file.path)
-
-    if (!thumbnail) {
-        return res.status(500).json(new ApiError(500, " Error occured while updating thumbail "))
-    }
-  
-    
      const video = await Video.findOne(
         {
-            title,
+        _id: videoId,
             owner: req.user._id
         }
      )
@@ -154,8 +152,14 @@ const updateVideo = async (req, res, next) => {
      }
 
      video.title = newTitle
-     video.description = description,
-     video.thumbnail = thumbnail.path
+     video.description = description
+     if (req.file) {
+      const thumbnail = await uploadOnCloudinary(req.file.path)
+      if (!thumbnail) {
+        return res.status(500).json(new ApiError(500, " Error occured while updating thumbnail "))
+      }
+      video.thumbnail = thumbnail.url
+     }
      const updatedVideo = await video.save({ validateBeforeSave : false})
      
 
@@ -171,24 +175,18 @@ const updateVideo = async (req, res, next) => {
 
 const deleteVideo = async (req, res, next) => {
       
-    const { title } = req.params
+    const { videoId } = req.params
 
-    if (!title) {
-        return res.status(400).json(new ApiError(400, "Give a valid Title"))
+    if (!mongoose.Types.ObjectId.isValid(videoId)) {
+        return res.status(400).json(new ApiError(400, "Invalid video ID"))
     }
-     
-    console.log(title);
-    console.log(req.user._id);
-    
+
      const video = await Video.findOne(
         { 
-          title,
+          _id: videoId,
           owner: req.user._id
         }
      )
-
-     console.log(video);
-     
 
      if (!video) {
         return res.status(404).json(new ApiError(404, "could not find the requested video"))
@@ -199,7 +197,7 @@ const deleteVideo = async (req, res, next) => {
      }
 
      const deleteResponse = await Video.deleteOne({ 
-        title, 
+        _id: videoId,
         owner: req.user._id
     })
 
@@ -216,19 +214,16 @@ const deleteVideo = async (req, res, next) => {
 
 const togglePublisedStatus = async (req, res, next) => {
 
-    const { title } = req.params
+  const { videoId } = req.params
 
-    if (!title) {
-        return res.status(400).json(new ApiError(400, " Title is invalid "))
+  if (!mongoose.Types.ObjectId.isValid(videoId)) {
+    return res.status(400).json(new ApiError(400, "Invalid video ID"))
     }
 
     const video = await Video.findOne({
-       title,
+     _id: videoId,
        owner: req.user._id
     })
-
-    console.log(video);
-    
 
     if (!video) {
         return res.status(404).json(new ApiError(404, " unable to find video "))

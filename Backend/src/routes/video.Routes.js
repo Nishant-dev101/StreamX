@@ -25,13 +25,13 @@ router.post("/video/uploadAVideo"
 
 router.get("/video/getSearchedVideos", getSearchedVideos)
 
-router.patch("/video/updateVideo/:title"
+router.patch("/video/updateVideo/:videoId"
     ,verifyJWT
     , upload.single("thumbnail"),
      updateVideo)
 
-router.delete("/video/deleteVideo/:title", verifyJWT, deleteVideo)
-router.post("/video/changePublishedStatus/:title", verifyJWT, togglePublisedStatus)
+router.delete("/video/deleteVideo/:videoId", verifyJWT, deleteVideo)
+router.post("/video/changePublishedStatus/:videoId", verifyJWT, togglePublisedStatus)
 router.get("/video/getVideoById/:id", getVideoById)
 router.get("/video/getUserVideos/:userId", getUserVideos)
 export default router;
