@@ -166,7 +166,7 @@ const UserPage = () => {
                   (event.currentTarget.style.borderColor = PALETTE.line)
                 }
               >
-                Update Videos
+                Update Tweets
               </button>
              
               
