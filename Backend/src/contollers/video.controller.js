@@ -109,11 +109,11 @@ const uploadAVideo = async (req, res, next) => {
     const outputDir = path.join("public", "hls", videoId);
 
     console.log("before hlsUrl")
-    const playlistPath = await generateHLS(videoFileLocalPath,outputDir)
+    const masterPlaylistPath = await generateHLS(videoFileLocalPath,outputDir)
     
-    const hlsPath = playlistPath.replace("public", "");
-    console.log(hlsPath)
-    const hlsURL = `${req.protocol}://${req.get("host")}/hls/${videoId}/playlist.m3u8`;
+    // const masterPlaylistPath = playlistPath.replace("public", "");
+    console.log(masterPlaylistPath)
+    const hlsURL = `${req.protocol}://${req.get("host")}/hls/${videoId}/master.m3u8`;
     console.log(hlsURL)
 
    
