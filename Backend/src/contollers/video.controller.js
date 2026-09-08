@@ -2,8 +2,10 @@ import mongoose from "mongoose"
 import { Video } from "../models/video.model.js"
 import { ApiError } from "../utils/apiError.js"
 import { ApiResponse } from "../utils/apiResponse.js"
-import uploadOnCloudinary from "../utils/clodinary.js"
-import { pipeline } from "stream"
+import { uploadOnCloudinary, uploadVideoOnCloudinary } from "../utils/clodinary.js"
+import { generateHLS } from "../utils/hls.service.js"
+import path from "path"
+import crypto from "crypto";
 
 const getAllVideos = async (req, res, next) => {
    
@@ -100,26 +102,45 @@ const uploadAVideo = async (req, res, next) => {
 
     const videoFileLocalPath = req.files.videoFile[0].path;
     const thumbnailLocalPath = req.files.thumbnail[0].path;
+    console.log(req.files.videoFile[0].filename)
 
+  
+    const videoId = crypto.randomUUID();
+    const outputDir = path.join("public", "hls", videoId);
+
+    console.log("before hlsUrl")
+    const playlistPath = await generateHLS(videoFileLocalPath,outputDir)
+    
+    const hlsPath = playlistPath.replace("public", "");
+    console.log(hlsPath)
+    const hlsURL = `${req.protocol}://${req.get("host")}/hls/${videoId}/playlist.m3u8`;
+    console.log(hlsURL)
+
+   
     const videoFile = await uploadOnCloudinary(videoFileLocalPath);
     const thumbnailFile = await uploadOnCloudinary(thumbnailLocalPath);
 
     if (!videoFile || !thumbnailFile) {
         return res.status(500).json(new ApiError(500, "Error occurred while uploading files to Cloudinary"));
     }
-
-    const document = await Video.create({
+     
+     let document;
+     try {
+       document = await Video.create({
         videoFile: videoFile.url,
+        videoFileHLS: hlsURL,
         title: title,
         description: description,
         thumbnail: thumbnailFile.url,
         owner: req.user?._id,
-        duration: videoFile.duration,
+        duration: videoFile.duration ?? 0,
         ispublised: true
     });
-
+    } catch (error) {
+       return next(error)
+    }
     return res.status(201).json(
-        new ApiResponse(200, document, "Successfully uploaded video")
+      new ApiResponse(201, document, "Video uploaded and encoded successfully")
     );
 }
 

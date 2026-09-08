@@ -25,7 +25,7 @@ const UpdateVideos = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [videos, setVideos] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading ] = useState(false)
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
@@ -80,7 +80,7 @@ const UpdateVideos = () => {
       setForm({ title: "", description: "", thumbnail: null, videoFile: null });
       if (thumbnailRef.current) thumbnailRef.current.value = "";
       if (videoRef.current) videoRef.current.value = "";
-      setMessage("Video uploaded successfully.");
+      setMessage("Video uploaded and encoded successfully.");
       await loadVideos();
     } catch (requestError) {
       setError(
@@ -120,8 +120,8 @@ const UpdateVideos = () => {
     }
   };
 
-  if (loading) return <Loading />;
-  if (error && !videos.length) return <Error error={error} />;
+
+ 
   return (
     <main
       className="mx-auto min-h-screen max-w-6xl px-4 py-8"

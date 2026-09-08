@@ -1,6 +1,6 @@
 import { ApiError } from "../utils/apiError.js";
 import { User } from "../models/user.model.js";
-import uploadOnCloudinary from "../utils/clodinary.js";
+import {uploadOnCloudinary} from "../utils/clodinary.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 import jwt from "jsonwebtoken"
 import mongoose from "mongoose";
