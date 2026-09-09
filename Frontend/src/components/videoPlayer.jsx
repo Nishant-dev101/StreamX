@@ -1,6 +1,7 @@
 
 
 import { useEffect, useState } from 'react'
+import { useRef } from 'react'
 import Plyr from 'plyr'
 import 'plyr/dist/plyr.css'
 import { PALETTE } from '../utils/styles'
@@ -14,7 +15,6 @@ import { getVideoLikes, toggleLike } from '../services/like.service'
 import { Bookmark, Check, ThumbsUp } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { addVideoToPlaylist, getUserPlaylists } from '../services/playlist.service'
-import { useRef } from 'react'
 import Hls from "hls.js";
 
 
@@ -81,9 +81,8 @@ const VideoPlayer = ({ videoId }) => {
 
  const videoElRef = useRef(null);
  const plyrRef = useRef(null);
- const countView = useRef(false)
+ const countViewRef = useRef(false)
 
-/
 useEffect(() => {
   const media = videoElRef.current;
   if (!media || !video?.videoFileHLS) return;
@@ -172,11 +171,13 @@ useEffect(() => {
 
    // handle increase Views
     const handleViewsUpdate = ()=> {
+      console.log("into updateviews")
            const videoPlayer = videoElRef.current
-            if(!videoPlayer || countView.current) return;
+            if(!videoPlayer || countViewRef.current == true) return;
+            console.log("after check")
 
-             if(videoPlayer.currentTime > 30 ){
-               countView.current = true;
+             if(videoPlayer.currentTime > 10 ){
+               countViewRef.current = true;
                setVideo((prev) => ({...prev, views: prev.views + 1}))
                updateVideoView(video._id)
              } 
@@ -189,15 +190,26 @@ useEffect(() => {
     const fetchVideo = async () => {
       try {
         setLoading(true)
+        setProfileLoading(true)
+        setProfile(null)
         const res = await getVideoById(videoId)
         console.log(res)
-        setVideo(res?.data?.data)
+        const nextVideo = res?.data?.data
+
+        if (nextVideo?.owner?._id) {
+          const profileResponse = await getUserChannelProfile(nextVideo.owner._id)
+          setVideo(nextVideo)
+          setProfile(profileResponse?.data?.data)
+        } else {
+          setVideo(nextVideo)
+        }
       } catch (error) {
         console.log(error)
         const msg = error?.response?.data?.message || "something went wrong"
         setError(msg)
       } finally {
         setLoading(false)
+        setProfileLoading(false)
       }
     }
 
@@ -228,36 +240,6 @@ useEffect(() => {
       fetchVideoLikes()
     }
   }, [videoId])
-
-  // fetch channelProfile
-  useEffect(() => {
-
-    const fetchChannelProfile = async () => {
-      try {
-        setProfileLoading(true)
-        console.log("into the fetchUserProfile", video.owner._id)
-        const response = await getUserChannelProfile(video?.owner?._id)
-        console.log(response)
-        setProfile(response.data.data)
-        setError(null)
-      } catch (err) {
-        setError(err.response?.data?.message || 'Failed to load channel profile')
-        console.error('Error fetching channel profile:', err)
-      } finally {
-        setProfileLoading(false)
-      }
-    }
-
-    if (video?.owner?._id) {
-      fetchChannelProfile()
-    }
-
-
-  }, [video?.owner?._id])
-
-
-
- 
 
   const handleToggleSubscription = async () => {
     console.log("prifile at toggleSub", profile)
@@ -399,8 +381,11 @@ useEffect(() => {
                   >
                     {video.owner?.userName || "Unknown Channel"}
                   </p>
-                  <p className="text-xs" style={{ color: PALETTE.muted }}>
+                  {/* <p className="text-xs" style={{ color: PALETTE.muted }}>
                     @{video?.owner?.userName || "unknown"}
+                  </p> */}
+                  <p className="text-xs" style={{ color: PALETTE.muted }}>
+                    {profile?.subscribersCount ?? 0} subscribers
                   </p>
                 </div>
               </div>

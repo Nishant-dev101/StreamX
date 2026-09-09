@@ -1,14 +1,14 @@
 
 
 
-import React from 'react'
 import Navbar from '../components/navbar'
 import SearchBar from '../components/searchBar'
 import { PALETTE, TYPOGRAPHY } from '../utils/styles'
-import { Outlet } from 'react-router-dom'
+import { Outlet, useLocation } from 'react-router-dom'
 
 const MainLayout = () => {
-  
+    const { pathname } = useLocation()
+    const isVideoPlaying = pathname.startsWith('/video/videoPlayerPage/')
   
     return (
 
@@ -20,11 +20,13 @@ const MainLayout = () => {
             }}
         >
             <Navbar />
-            <div className="flex-1 px-6 py-6">
+            <div className={`flex-1 ${isVideoPlaying ? 'px-2 pt-3 pb-2 sm:px-3' : 'px-6 py-6'}`}>
                 
-                <div className="sticky top-4 z-10">
-                    <SearchBar />
-                </div>
+                {!isVideoPlaying && (
+                    <div className="sticky top-4 z-10">
+                        <SearchBar />
+                    </div>
+                )}
 
                 <Outlet />
             </div>
