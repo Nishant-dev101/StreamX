@@ -6,6 +6,7 @@ import { uploadOnCloudinary, uploadVideoOnCloudinary } from "../utils/clodinary.
 import { generateHLS } from "../utils/hls.service.js"
 import path from "path"
 import crypto from "crypto";
+import fs from "fs/promises";
 
 const getAllVideos = async (req, res, next) => {
    
@@ -130,6 +131,7 @@ const uploadAVideo = async (req, res, next) => {
         videoFile: videoFile.url,
         videoFileHLS: hlsURL,
         title: title,
+        hlsVideoId: videoId,
         description: description,
         thumbnail: thumbnailFile.url,
         owner: req.user?._id,
@@ -157,12 +159,10 @@ const updateVideo = async (req, res, next) => {
     return res.status(400).json(new ApiError(400, " All fields are required "))
     }
 
-     const video = await Video.findOne(
-        {
-        _id: videoId,
-            owner: req.user._id
-        }
-     )
+     const video = await Video.findOne({
+       _id: videoId,
+       owner: req.user._id,
+     });
     
      if (!video) {
         return res.status(404).json(new ApiError(404," Video does not exists "))
@@ -195,42 +195,59 @@ const updateVideo = async (req, res, next) => {
 
 
 const deleteVideo = async (req, res, next) => {
-      
-    const { videoId } = req.params
+  const { videoId } = req.params;
 
-    if (!mongoose.Types.ObjectId.isValid(videoId)) {
-        return res.status(400).json(new ApiError(400, "Invalid video ID"))
-    }
+  if (!mongoose.Types.ObjectId.isValid(videoId)) {
+    return res
+      .status(400)
+      .json(new ApiError(400, "Invalid video ID"));
+  }
 
-     const video = await Video.findOne(
-        { 
-          _id: videoId,
-          owner: req.user._id
-        }
-     )
+  const video = await Video.findOne({
+    _id: videoId,
+    owner: req.user._id,
+  });
 
-     if (!video) {
-        return res.status(404).json(new ApiError(404, "could not find the requested video"))
-     }
+  if (!video) {
+    return res
+      .status(404)
+      .json(new ApiError(404, "Could not find the requested video"));
+  }
 
-     if (video.owner.toString() !== req.user._id.toString()) {
-          return res.status(403).json(new ApiError(403, " unauthorised request to delete this video" ))
-     }
+  const hlsDir = path.join("public", "hls", video.hlsVideoId);
+  console.log()
 
-     const deleteResponse = await Video.deleteOne({ 
-        _id: videoId,
-        owner: req.user._id
-    })
+  try {
+    fs.rm(hlsDir, {
+      recursive: true,
+      force: true,
+    });
+  } catch (error) {
+    console.error("Failed to delete HLS files:", error);
 
-     if (!deleteResponse.acknowledged) {
-        return res.status(500).json(new ApiError(500, " failed to delete Video "))
-     }
+    return res
+      .status(500)
+      .json(new ApiError(500, "Failed to delete HLS files"));
+  }
 
-     return res.status(200)
-     .json(
-        new ApiResponse(200, {}, " successfully deleted video ")
-     )
-}
+  const deleteResponse = await Video.deleteOne({
+    _id: videoId,
+    owner: req.user._id,
+  });
+
+  if (!deleteResponse.acknowledged) {
+    return res
+      .status(500)
+      .json(new ApiError(500, "Failed to delete video"));
+  }
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, {}, "Successfully deleted video")
+    );
+};
+
 
 
 const togglePublisedStatus = async (req, res, next) => {
