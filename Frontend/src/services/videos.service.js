@@ -32,6 +32,11 @@ export const searchVideos = async (query) => {
    return res
 }
 
+export const getRecommendedVideos = async (videoId) => {
+   const res = await api.get(`/video/getRecommendedVideos/${videoId}`)
+   return res
+}
+
 export const uploadVideo = async (videoData) => {
    const formData = new FormData()
    formData.append('title', videoData.title)
@@ -55,4 +60,8 @@ export const deleteVideo = async (videoId) => {
 
 export const togglePublishedStatus = async (videoId) => {
    return api.post(`/video/changePublishedStatus/${videoId}`)
+}
+
+export const updateVideoView = (videoId) => {
+         return api.post(`/video/updateVideoView/${videoId}`)
 }

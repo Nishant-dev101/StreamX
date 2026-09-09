@@ -91,6 +91,43 @@ const getSearchedVideos = async (req, res, next) => {
 
 }
 
+const getRecommendedVideos = async (req, res, next) => {
+  const { videoId } = req.params
+
+  if (!videoId || !mongoose.Types.ObjectId.isValid(videoId)) {
+    return res.status(400).json(new ApiError(400, "Invalid video ID"))
+  }
+
+  const currentVideo = await Video.findById(videoId).select("title description")
+
+  if (!currentVideo) {
+    return res.status(404).json(new ApiError(404, "Video not found"))
+  }
+
+  const terms = `${currentVideo.title} ${currentVideo.description}`
+    .toLowerCase()
+    .match(/[a-z0-9]{3,}/g) || []
+  const uniqueTerms = [...new Set(terms)].slice(0, 12)
+
+  const recommendations = uniqueTerms.length
+    ? await Video.find({
+      _id: { $ne: videoId },
+      ispublised: true,
+      $or: uniqueTerms.flatMap((term) => [
+        { title: { $regex: term, $options: "i" } },
+        { description: { $regex: term, $options: "i" } },
+      ]),
+    })
+      .populate("owner", "avatar userName fullName")
+      .sort({ views: -1, createdAt: -1 })
+      .limit(12)
+    : []
+
+  return res.status(200).json(
+    new ApiResponse(200, recommendations, "Recommended videos fetched successfully")
+  )
+}
+
 
 const uploadAVideo = async (req, res, next) => {
     const { title, description } = req.body;
@@ -362,14 +399,41 @@ const getVideoById = async (req, res, next) => {
     );
 }
      
+const updateVideoViews = async (req, res) => {
+    const { videoId } = req.params;
+
+    const video = await Video.findByIdAndUpdate(
+        videoId,
+        { $inc: { views: 1 } },
+        { new: true }
+    );
+
+    if (!video) {
+        return res
+            .status(404)
+            .json(new ApiError(404, "Video not found"));
+    }
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                { views: video.views },
+                "View counted successfully"
+            )
+        );
+};
 
 export { 
     getAllVideos, 
     getSearchedVideos,
+    getRecommendedVideos,
     uploadAVideo,
     updateVideo,
     deleteVideo,
     togglePublisedStatus,
     getVideoById,
-    getUserVideos
+    getUserVideos,
+    updateVideoViews
 }

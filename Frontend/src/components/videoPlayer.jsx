@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import Plyr from 'plyr'
 import 'plyr/dist/plyr.css'
 import { PALETTE } from '../utils/styles'
-import { getVideoById } from '../services/videos.service'
+import { getVideoById, updateVideoView } from '../services/videos.service'
 import Loading from './loading'
 import Error from './error'
 import { useNavigate } from 'react-router-dom'
@@ -81,8 +81,9 @@ const VideoPlayer = ({ videoId }) => {
 
  const videoElRef = useRef(null);
  const plyrRef = useRef(null);
+ const countView = useRef(false)
 
-// Create Plyr once, against a ref you control
+/
 useEffect(() => {
   const media = videoElRef.current;
   if (!media || !video?.videoFileHLS) return;
@@ -93,7 +94,7 @@ useEffect(() => {
 
   const updateQuality = (newQuality) => {
     if (newQuality === 0) {
-      hls.currentLevel = -1; // -1 = let hls.js auto-select
+      hls.currentLevel = -1; 
     } else {
       hls.levels.forEach((level, i) => {
         if (level.height === newQuality) hls.currentLevel = i;
@@ -113,7 +114,7 @@ useEffect(() => {
       settings: qualityOptions ? ['quality', 'speed'] : ['speed'],
       ...(qualityOptions && {
         quality: {
-          default: 0, // 0 = "Auto"
+          default: 0, 
           options: qualityOptions,
           forced: true,
           onChange: updateQuality,
@@ -131,10 +132,10 @@ useEffect(() => {
     hls.on(Hls.Events.MANIFEST_PARSED, (_e, data) => {
       const heights = [...new Set(data.levels.map(l => l.height))].sort((a, b) => b - a);
       createPlyr([0, ...heights]); // [Auto, 1080, 720, 480, ...]
-      media.play(); // remove if you don't want autoplay
+      media.play(); 
     });
 
-    // Keep Plyr's quality UI in sync when hls.js auto-switches levels
+    
     hls.on(Hls.Events.LEVEL_SWITCHED, (_e, data) => {
       if (!plyrRef.current) return;
       const height = hls.levels[data.level]?.height;
@@ -155,8 +156,7 @@ useEffect(() => {
       }
     });
   } else if (media.canPlayType('application/vnd.apple.mpegurl')) {
-    // Safari's native HLS handles ABR internally; hls.js levels
-    // aren't available here, so skip the quality menu.
+    
     media.src = video.videoFileHLS;
     createPlyr(null);
   }
@@ -170,7 +170,17 @@ useEffect(() => {
   };
 }, [video?.videoFileHLS]);
 
+   // handle increase Views
+    const handleViewsUpdate = ()=> {
+           const videoPlayer = videoElRef.current
+            if(!videoPlayer || countView.current) return;
 
+             if(videoPlayer.currentTime > 30 ){
+               countView.current = true;
+               setVideo((prev) => ({...prev, views: prev.views + 1}))
+               updateVideoView(video._id)
+             } 
+    }
 
   // fetchVideo by Id
   useEffect(() => {
@@ -247,7 +257,7 @@ useEffect(() => {
 
 
 
-  // const channelName = video.owner?.[0]?.userName || 'Unknown creator'
+ 
 
   const handleToggleSubscription = async () => {
     console.log("prifile at toggleSub", profile)
@@ -338,6 +348,7 @@ useEffect(() => {
         <div className="relative h-[75vh] w-full bg-black">
           <video
             ref={videoElRef}
+            onTimeUpdate={handleViewsUpdate}
             className="h-full w-full object-contain"
             playsInline
           />
