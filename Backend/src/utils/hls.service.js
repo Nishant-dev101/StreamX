@@ -11,15 +11,13 @@ export const generateHLS = (inputPath, outputDir) => {
       { name: "720p", height: 720, bitrate: "2500k", bandwidth: 2800000 },
       { name: "1080p", height: 1080, bitrate: "5000k", bandwidth: 5500000 },
     ];
-
-    const commands = qualities.map((quality) => {
+      const commands = qualities.map((quality) => {
       const qualityDir = path.join(outputDir, quality.name);
 
       fs.mkdirSync(qualityDir, { recursive: true });
 
       const playlistPath = path.join(qualityDir, "playlist.m3u8");
-
-      return new Promise((resolveQuality, rejectQuality) => {
+       return new Promise((resolveQuality, rejectQuality) => {
         ffmpeg(inputPath)
           .videoFilters(`scale=-2:${quality.height}`)
           .output(playlistPath)
@@ -51,7 +49,7 @@ export const generateHLS = (inputPath, outputDir) => {
 
     Promise.all(commands)
       .then(() => {
-        // Create master playlist
+      
         const masterPlaylistPath = path.join(outputDir, "master.m3u8");
 
         let masterPlaylist = "#EXTM3U\n\n";

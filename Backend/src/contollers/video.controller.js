@@ -2,7 +2,7 @@ import mongoose from "mongoose"
 import { Video } from "../models/video.model.js"
 import { ApiError } from "../utils/apiError.js"
 import { ApiResponse } from "../utils/apiResponse.js"
-import { uploadOnCloudinary, uploadVideoOnCloudinary } from "../utils/clodinary.js"
+import { uploadOnCloudinary } from "../utils/clodinary.js"
 import { generateHLS } from "../utils/hls.service.js"
 import path from "path"
 import crypto from "crypto";
@@ -401,7 +401,7 @@ const getVideoById = async (req, res, next) => {
      
 const updateVideoViews = async (req, res) => {
     const { videoId } = req.params;
-
+    console.log("videoId at updateviews", videoId)
     const video = await Video.findByIdAndUpdate(
         videoId,
         { $inc: { views: 1 } },
@@ -413,6 +413,7 @@ const updateVideoViews = async (req, res) => {
             .status(404)
             .json(new ApiError(404, "Video not found"));
     }
+    console.log("after no video error")
 
     return res
         .status(200)
