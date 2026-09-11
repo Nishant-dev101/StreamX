@@ -70,6 +70,10 @@ export const router = createBrowserRouter([
         {
          path: "search",
          element: <SearchedVideos/>
+        },
+        {
+         path: "video/videoPlayerPage/:id",
+         element: <VideoPlayPage />
         }
     ],
   },
@@ -80,8 +84,5 @@ export const router = createBrowserRouter([
   {
     path: "/register",
     element: <Register />,
-  },{
-    path: "/video/videoPlayerPage/:id",
-    element: <VideoPlayPage />
   }
 ]);
