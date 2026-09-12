@@ -1,7 +1,10 @@
 # Logs
 
-public/temp/*
 public/hls/*
+!public/hls/.gitkeep
+
+public/temp/*
+!public/temp/.gitkeep
 
 logs
 *.log
