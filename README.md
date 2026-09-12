@@ -37,8 +37,17 @@ HLS Playlists & Segments
      ↓
 HLS.js / Video Player
 
- ScreenShots:
-<img width="1902" height=<img width="1912" height="905" alt="Screenshot 2026-09-11 211600" src="https://github.com/user-attachments/assets/f3485d44-c674-4072-86c3-010b5953fed2" />
+ ScreenShots: 
+ 
+  Adaptive streaming playback
+  
+ <img width="1902" height="918" alt="Screenshot 2026-09-09 223300" src="https://github.com/user-attachments/assets/77c1da25-d59f-4b15-afff-b7b03dd669e1" />
 
+   Home Page:
+   
+ <img width="1902" height=<img width="1912" height="905" alt="Screenshot 2026-09-11 211600" src="https://github.com/user-attachments/assets/f3485d44-c674-4072-      86c3-010b5953fed2" />
+
+ manage Videos:
+ 
 <img width="1883" height="911" alt="Screenshot 2026-09-11 211742" src="https://github.com/user-attachments/assets/5c803cdc-dad6-4c0e-8c91-f90857d8eed3" />
 
