@@ -22,6 +22,10 @@ app.use(express.urlencoded({ extended: true })); // Ensure extended parsing for 
 app.use(express.static("public"));
 app.use(cookieParser());
 
+app.get("/health", (_req, res) => {
+  res.status(200).send("Backend is awake");
+});
+
 // Routes
 
 import userRoutes from './routes/user.Routes.js';
